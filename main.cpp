@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 				int frame_Enemy = 0;
 
 				SDL_Event e;
-				Mix_PlayMusic(gMusic, -1);
+				//Mix_PlayMusic(gMusic, -1);
 				bool quit = false;
 
 				while (!quit)
