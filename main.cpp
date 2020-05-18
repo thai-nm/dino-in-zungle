@@ -26,16 +26,22 @@ SDL_Renderer* gRenderer = nullptr;
 Mix_Music* gMusic = nullptr;
 
 SDL_Rect gPlayButton[BUTTON_TOTAL];
+SDL_Rect gHelpButton[BUTTON_TOTAL];
+SDL_Rect gExitButton[BUTTON_TOTAL];
 SDL_Rect gCharacterClips[RUNNING_FRAMES];
 SDL_Rect gEnemyClips[FLYING_FRAMES];
 
-LTexture gMenu;
+LTexture gMenuTexture;
 LTexture gBackgroundTexture[BACKGROUND_LAYER];
-LTexture gCharacter;
-LTexture gGround;
+LTexture gCharacterTexture;
+LTexture gGroundTexture;
 LTexture gPlayButtonTexture;
+LTexture gHelpButtonTexture;
+LTexture gExitButtonTexture;
 
 Button PlayButton(389, 186);
+Button HelpButton(389, 293);
+Button ExitButton(389, 402);
 
 Character character;
 
@@ -57,17 +63,18 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			bool quit_game = false;
-			while (!quit_game)
+			bool Quit_Menu = false;
+			bool PlayAgain = false;
+
+			while (!Quit_Menu)
 			{
 				SDL_Event e_mouse;
-				gMenu.Render(0, 0, gRenderer);
+				gMenuTexture.Render(0, 0, gRenderer);
 				while (SDL_PollEvent(&e_mouse) != 0)
 				{
-					//User requests quit
 					if (e_mouse.type == SDL_QUIT)
 					{
-						quit_game = true;
+						Quit_Menu = true;
 					}
 
 					if (PlayButton.IsInside(&e_mouse))
@@ -75,31 +82,71 @@ int main(int argc, char* argv[])
 						switch (e_mouse.type)
 						{
 						case SDL_MOUSEMOTION:
-							PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+							cout << "insided play" << endl;
+							PlayButton.currentSprite = BUTTON_MOUSE_OVER;
 							break;
-
 						case SDL_MOUSEBUTTONDOWN:
-							PlayButton.currentSprite = BUTTON_MOUSE_OUT;
-							break;
-
-						case SDL_MOUSEBUTTONUP:
-							PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+							PlayAgain = true;
+							Quit_Menu = true;
+							PlayButton.currentSprite = BUTTON_MOUSE_OVER;
 							break;
 						}
 					}
 					else
 					{
-						PlayButton.currentSprite = BUTTON_MOUSE_OVER;
+						PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+					}
+
+					if (HelpButton.IsInside(&e_mouse))
+					{
+						switch (e_mouse.type)
+						{
+						case SDL_MOUSEMOTION:
+							cout << "inside help" << endl;
+							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
+							break;
+						case SDL_MOUSEBUTTONDOWN:
+							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
+							break;
+						}
+					}
+					else
+					{
+						HelpButton.currentSprite = BUTTON_MOUSE_OUT;
+					}
+
+					if (ExitButton.IsInside(&e_mouse))
+					{
+						switch (e_mouse.type)
+						{
+						case SDL_MOUSEMOTION:
+							cout << "inside exit" << endl;
+							ExitButton.currentSprite = BUTTON_MOUSE_OVER;
+							break;
+						case SDL_MOUSEBUTTONDOWN:
+							Quit_Menu = true;
+							ExitButton.currentSprite = BUTTON_MOUSE_OVER;
+							break;
+						}
+					}
+					else
+					{
+						ExitButton.currentSprite = BUTTON_MOUSE_OUT;
 					}
 				}
 
 				SDL_Rect* currentClip_Play = &gPlayButton[PlayButton.currentSprite];
 				PlayButton.Render(currentClip_Play, gRenderer, gPlayButtonTexture);
 
+				SDL_Rect* currentClip_Help = &gHelpButton[HelpButton.currentSprite];
+				HelpButton.Render(currentClip_Help, gRenderer, gHelpButtonTexture);
+
+				SDL_Rect* currentClip_Exit = &gExitButton[ExitButton.currentSprite];
+				ExitButton.Render(currentClip_Exit, gRenderer, gExitButtonTexture);
+
 				SDL_RenderPresent(gRenderer);
 			}
 
-			bool PlayAgain = true;
 			while (PlayAgain)
 			{
 				srand(time(NULL));
@@ -141,12 +188,12 @@ int main(int argc, char* argv[])
 					if (character.OnGround())
 					{
 						currentClip_Character = &gCharacterClips[frame_Character / SLOW_FRAME_CHAR];
-						character.Render(currentClip_Character, gRenderer, gCharacter);
+						character.Render(currentClip_Character, gRenderer, gCharacterTexture);
 					}
 					else
 					{
 						currentClip_Character = &gCharacterClips[0];
-						character.Render(currentClip_Character, gRenderer, gCharacter);
+						character.Render(currentClip_Character, gRenderer, gCharacterTexture);
 					}
 
 					if (AppearanceTime_1(time, enemy1.GetSpeed(acceleration)))
@@ -200,10 +247,10 @@ int main(int argc, char* argv[])
 				{
 					PlayAgain = false;
 				}
+				Close();
 			}
 		}
 	}
-
 	Close();
 
 	return 0;
@@ -238,12 +285,12 @@ void renderScrollingBackground(vector <double>& offsetSpeed)
 void renderScrollingGround(int& speed, const int acceleration)
 {
 	speed -= GROUND_SPEED + acceleration;
-	if (speed < -gGround.GetWidth())
+	if (speed < -gGroundTexture.GetWidth())
 	{
 		speed = 0;
 	}
-	gGround.Render(speed, 0, gRenderer);
-	gGround.Render(speed + gGround.GetWidth(), 0, gRenderer);
+	gGroundTexture.Render(speed, 0, gRenderer);
+	gGroundTexture.Render(speed + gGroundTexture.GetWidth(), 0, gRenderer);
 }
 
 bool Init()
@@ -311,7 +358,7 @@ bool LoadMedia()
 	}
 	else
 	{
-		if (!gMenu.LoadFromFile("imgs/background/menu.png", gRenderer))
+		if (!gMenuTexture.LoadFromFile("imgs/background/menu.png", gRenderer))
 		{
 			cout << "Failed to load menu image" << endl;
 			success = false;
@@ -333,6 +380,38 @@ bool LoadMedia()
 			}
 		}
 
+		if (!gHelpButtonTexture.LoadFromFile("imgs/button/big_button/help_button.png", gRenderer))
+		{
+			cout << "Failed to load help_button image" << endl;
+			success = false;
+		}
+		else
+		{
+			for (int i = 0; i < BUTTON_TOTAL; ++i)
+			{
+				gHelpButton[i].x = 150 * i;
+				gHelpButton[i].y = 0;
+				gHelpButton[i].w = 150;
+				gHelpButton[i].h = 98;
+			}
+		}
+
+		if (!gExitButtonTexture.LoadFromFile("imgs/button/big_button/exit_button.png", gRenderer))
+		{
+			cout << "Failed to load exit_button image" << endl;
+			success = false;
+		}
+		else
+		{
+			for (int i = 0; i < BUTTON_TOTAL; ++i)
+			{
+				gExitButton[i].x = 150 * i;
+				gExitButton[i].y = 0;
+				gExitButton[i].w = 150;
+				gExitButton[i].h = 98;
+			}
+		}
+
 		for (int i = 0; i < BACKGROUND_LAYER; ++i)
 		{
 			if (!gBackgroundTexture[i].LoadFromFile(LAYER[i].c_str(), gRenderer))
@@ -342,13 +421,13 @@ bool LoadMedia()
 			}
 		}
 
-		if (!gGround.LoadFromFile("imgs/background/ground.png", gRenderer))
+		if (!gGroundTexture.LoadFromFile("imgs/background/ground.png", gRenderer))
 		{
 			cout << "Failed to load ground image" << endl;
 			success = false;
 		}
 
-		if (!gCharacter.LoadFromFile("imgs/character/char_run.png", gRenderer))
+		if (!gCharacterTexture.LoadFromFile("imgs/character/char_run.png", gRenderer))
 		{
 			cout << "Failed to load character_run image." << endl;
 			success = false;
@@ -436,7 +515,13 @@ bool LoadMedia()
 
 void Close()
 {
-	gCharacter.Free();
+	gCharacterTexture.Free();
+	gMenuTexture.Free();
+	gCharacterTexture.Free();
+	gGroundTexture.Free();
+	gPlayButtonTexture.Free();
+	gHelpButtonTexture.Free();
+	gExitButtonTexture.Free();
 
 	for (int i = 0; i < BACKGROUND_LAYER; ++i)
 	{
