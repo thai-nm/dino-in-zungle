@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL_game_demo", "SDL_game_demo.vcxproj", "{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Debug|x64.ActiveCfg = Debug|x64
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Debug|x64.Build.0 = Debug|x64
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Debug|x86.ActiveCfg = Debug|Win32
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Debug|x86.Build.0 = Debug|Win32
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Release|x64.ActiveCfg = Release|x64
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Release|x64.Build.0 = Release|x64
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Release|x86.ActiveCfg = Release|Win32
+		{4EADEDA8-2972-44D0-AAC9-CA06EDD05482}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BC43F5D0-D7AE-4270-AD99-8980E4B9CCE6}
+	EndGlobalSection
+EndGlobal
