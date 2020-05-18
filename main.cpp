@@ -35,7 +35,7 @@ LTexture gCharacter;
 LTexture gGround;
 LTexture gPlayButtonTexture;
 
-Button PlayButton;
+Button PlayButton(389, 186);
 
 Character character;
 
@@ -70,18 +70,34 @@ int main(int argc, char* argv[])
 						quit_game = true;
 					}
 
-					//Handle button events
-					PlayButton.HandleEvent(&e_mouse);
+					if (PlayButton.IsInside(&e_mouse))
+					{
+						switch (e_mouse.type)
+						{
+						case SDL_MOUSEMOTION:
+							PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+							break;
+
+						case SDL_MOUSEBUTTONDOWN:
+							PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+							break;
+
+						case SDL_MOUSEBUTTONUP:
+							PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+							break;
+						}
+					}
+					else
+					{
+						PlayButton.currentSprite = BUTTON_MOUSE_OVER;
+					}
 				}
 
-				/*SDL_Rect* currentClip_Play = &gPlayButton[PlayButton.GetCurrentSprite()];
-				PlayButton.Render(currentClip_Play,)**/
+				SDL_Rect* currentClip_Play = &gPlayButton[PlayButton.currentSprite];
+				PlayButton.Render(currentClip_Play, gRenderer, gPlayButtonTexture);
+
 				SDL_RenderPresent(gRenderer);
 			}
-
-
-			SDL_RenderPresent(gRenderer);
-			
 
 			bool PlayAgain = true;
 			while (PlayAgain)
@@ -310,8 +326,8 @@ bool LoadMedia()
 		{
 			for (int i = 0; i < BUTTON_TOTAL; ++i)
 			{
-				gPlayButton[i].x = 464;
-				gPlayButton[i].y = 235;
+				gPlayButton[i].x = 150*i;
+				gPlayButton[i].y = 0;
 				gPlayButton[i].w = 150;
 				gPlayButton[i].h = 98;
 			}

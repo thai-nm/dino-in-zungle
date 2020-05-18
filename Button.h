@@ -7,19 +7,19 @@
 class Button
 {
 public:
+	ButtonSprite currentSprite;
+
 	Button();
 
 	Button(int x, int y);
 
-	void HandleEvent(SDL_Event* e);
+	bool IsInside(SDL_Event *e);
 
-	void Render(SDL_Rect* currentClip[BUTTON_TOTAL], SDL_Renderer* gRenderer, LTexture gButtonTexture);
+	void Render(SDL_Rect* currentClip, SDL_Renderer* gRenderer, LTexture gButtonTexture);
 
-	ButtonSprite GetCurrentSprite();
 private:
 	SDL_Point position;
 
-	ButtonSprite currentSprite;
 };
 
 #endif // !BUTTON_H_

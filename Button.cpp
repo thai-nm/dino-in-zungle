@@ -16,7 +16,7 @@ Button::Button(int x, int y)
 	currentSprite = BUTTON_MOUSE_OUT;
 }
 
-void Button::HandleEvent(SDL_Event *e)
+bool Button::IsInside(SDL_Event *e)
 {
 	if (e->type == SDL_MOUSEMOTION || e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEBUTTONUP)
 	{
@@ -40,33 +40,13 @@ void Button::HandleEvent(SDL_Event *e)
 		{
 			inside = false;
 		}
-		
-		if(inside)
-		{
-			switch (e->type)
-			{
-			case SDL_MOUSEMOTION:
-				currentSprite = BUTTON_MOUSE_OVER;
-				break;
-
-			case SDL_MOUSEBUTTONDOWN:
-				currentSprite = BUTTON_MOUSE_OVER;
-				break;
-			
-			default:
-				currentSprite = BUTTON_MOUSE_OUT;
-				break;
-			}
-		}
+		return inside;
 	}
+	return false;
 }
 
-void Button::Render(SDL_Rect* currentClip[BUTTON_TOTAL], SDL_Renderer* gRenderer, LTexture gButtonTexture)
+void Button::Render(SDL_Rect* currentClip, SDL_Renderer* gRenderer, LTexture gButtonTexture)
 {
-	gButtonTexture.Render(position.x, position.y, gRenderer, currentClip[currentSprite]);
+	gButtonTexture.Render(position.x, position.y, gRenderer, currentClip);
 }
 
-ButtonSprite Button::GetCurrentSprite()
-{
-	return currentSprite;
-}
