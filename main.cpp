@@ -27,21 +27,25 @@ Mix_Music* gMusic = nullptr;
 
 SDL_Rect gPlayButton[BUTTON_TOTAL];
 SDL_Rect gHelpButton[BUTTON_TOTAL];
+SDL_Rect gBackButton[BUTTON_TOTAL];
 SDL_Rect gExitButton[BUTTON_TOTAL];
 SDL_Rect gCharacterClips[RUNNING_FRAMES];
 SDL_Rect gEnemyClips[FLYING_FRAMES];
 
 LTexture gMenuTexture;
+LTexture gInstructionTexture;
 LTexture gBackgroundTexture[BACKGROUND_LAYER];
 LTexture gCharacterTexture;
 LTexture gGroundTexture;
 LTexture gPlayButtonTexture;
 LTexture gHelpButtonTexture;
+LTexture gBackButtonTexture;
 LTexture gExitButtonTexture;
 
 Button PlayButton(389, 186);
 Button HelpButton(389, 293);
 Button ExitButton(389, 402);
+Button BackButton(31, 29);
 
 Character character;
 
@@ -107,6 +111,59 @@ int main(int argc, char* argv[])
 							break;
 						case SDL_MOUSEBUTTONDOWN:
 							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
+
+							/*bool ReadDone = false;
+							while (!ReadDone)
+							{
+								cout << 1 << endl;
+								SDL_Event e_back;
+								while (SDL_PollEvent(&e_mouse) != 0)
+								{
+									if (e_mouse.type == SDL_QUIT)
+									{
+										ReadDone = true;
+										Quit_Menu = true;
+									}
+
+									if (BackButton.IsInside(&e_mouse))
+									{
+										switch (e_mouse.type)
+										{
+										case SDL_MOUSEMOTION:
+											cout << "inside back" << endl;
+											BackButton.currentSprite = BUTTON_MOUSE_OVER;
+											break;
+										case SDL_MOUSEBUTTONDOWN:
+											BackButton.currentSprite = BUTTON_MOUSE_OVER;
+											ReadDone = true;
+											break;
+										}
+									}
+									else
+									{
+										cout << 2 << endl;
+										BackButton.currentSprite = BUTTON_MOUSE_OUT;
+									}
+
+									SDL_RenderPresent(gRenderer);
+								}
+								break;
+							}*/
+							
+							{
+								gInstructionTexture.Render(0, 0, gRenderer);
+
+								SDL_Rect* currentClip_Back = &gBackButton[BackButton.currentSprite];
+								BackButton.Render(currentClip_Back, gRenderer, gBackButtonTexture);
+							}
+							break;
+						case SDL_MOUSEBUTTONUP:
+						{
+							gInstructionTexture.Render(0, 0, gRenderer);
+
+							SDL_Rect* currentClip_Back_1 = &gBackButton[BackButton.currentSprite];
+							BackButton.Render(currentClip_Back_1, gRenderer, gBackButtonTexture);
+						}
 							break;
 						}
 					}
@@ -364,6 +421,12 @@ bool LoadMedia()
 			success = false;
 		}
 
+		if (!gInstructionTexture.LoadFromFile("imgs/background/instruction.png", gRenderer))
+		{
+			cout << "Failed to load instruction image" << endl;
+			success = false;
+		}
+
 		if (!gPlayButtonTexture.LoadFromFile("imgs/button/big_button/play_button.png", gRenderer))
 		{
 			cout << "Failed to load play_button image" << endl;
@@ -393,6 +456,22 @@ bool LoadMedia()
 				gHelpButton[i].y = 0;
 				gHelpButton[i].w = 150;
 				gHelpButton[i].h = 98;
+			}
+		}
+
+		if (!gBackButtonTexture.LoadFromFile("imgs/button/big_button/back_button.png", gRenderer))
+		{
+			cout << "Failed to load back_button image" << endl;
+			success = false;
+		}
+		else
+		{
+			for (int i = 0; i < BUTTON_TOTAL; ++i)
+			{
+				gBackButton[i].x = 100 * i;
+				gBackButton[i].y = 0;
+				gBackButton[i].w = 100;
+				gBackButton[i].h = 78;
 			}
 		}
 
