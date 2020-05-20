@@ -9,10 +9,10 @@ class Enemy
 {
 public:
 	Enemy(int _type = 0);
-
-	Enemy();
 	
 	~Enemy();
+	
+	void SetToStart(int _type);
 
 	bool LoadFromFile(std::string path, SDL_Renderer* gRenderer);
 

@@ -49,10 +49,6 @@ Button BackButton(31, 29);
 
 Character character;
 
-Enemy enemy1(ON_GROUND_ENEMY);
-Enemy enemy2(ON_GROUND_ENEMY);
-Enemy enemy3(IN_AIR_ENEMY);
-
 int main(int argc, char* argv[])
 {
 	if (!Init())
@@ -109,6 +105,55 @@ int main(int argc, char* argv[])
 
 			while (Play_Again)
 			{
+				Enemy enemy1(ON_GROUND_ENEMY);
+				Enemy enemy2(ON_GROUND_ENEMY);
+				Enemy enemy3(IN_AIR_ENEMY);
+
+				if (!enemy1.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
+				{
+					std::cout << "Failed to load enemy1 image." << std::endl;
+					//success = false;
+				}
+
+				if (!enemy2.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
+				{
+					std::cout << "Failed to load enemy2 image." << std::endl;
+					//success = false;
+				}
+
+				if (!enemy3.LoadFromFile("imgs/enemy/bat.png", gRenderer))
+				{
+					std::cout << "Failed to load bat enemy image." << std::endl;
+					//success = false;
+				}
+				else
+				{
+					gEnemyClips[0].x = 43 * 3;
+					gEnemyClips[0].y = 0;
+					gEnemyClips[0].w = 43;
+					gEnemyClips[0].h = 30;
+
+					gEnemyClips[1].x = 43 * 4;
+					gEnemyClips[1].y = 0;
+					gEnemyClips[1].w = 43;
+					gEnemyClips[1].h = 30;
+
+					gEnemyClips[2].x = 43 * 2;
+					gEnemyClips[2].y = 0;
+					gEnemyClips[2].w = 43;
+					gEnemyClips[2].h = 30;
+
+					gEnemyClips[3].x = 43;
+					gEnemyClips[3].y = 0;
+					gEnemyClips[3].w = 43;
+					gEnemyClips[3].h = 30;
+
+					gEnemyClips[4].x = 0;
+					gEnemyClips[4].y = 0;
+					gEnemyClips[4].w = 43;
+					gEnemyClips[4].h = 30;
+				}
+
 				srand(time(NULL));
 				int time = 0;
 				int acceleration = 0;
@@ -120,19 +165,16 @@ int main(int argc, char* argv[])
 				int frame_Enemy = 0;
 
 				SDL_Event e;
-				//Mix_PlayMusic(gMusic, IS_REPETITIVE);
+				//Mix_PlayMusic(gMusic, IS_REPEATITIVE);
 				bool quit = false;
-				int i = 0;
 				while (!quit)
 				{
 					UpdateGameTime(time, acceleration);
-					std::cout << 1 << std::endl;
 
 					while (SDL_PollEvent(&e) != 0)
 					{
 						if (e.type == SDL_QUIT)
 						{
-							i++;
 							quit = true;
 						}
 
@@ -189,7 +231,6 @@ int main(int argc, char* argv[])
 						quit = true;
 					}
 
-
 					SDL_RenderPresent(gRenderer);
 
 					ControlCharFrame(frame_Character);
@@ -197,18 +238,21 @@ int main(int argc, char* argv[])
 
 					if (quit)
 					{
-						i++;
 						std::cout << "Do you want to play again?" << std::endl;
 						int check;
 						std::cin >> check;
 						if (check == 1)
 						{
+							enemy1.SetToStart(ON_GROUND_ENEMY);
+							enemy2.SetToStart(ON_GROUND_ENEMY);
+							enemy3.SetToStart(IN_AIR_ENEMY);
 							Play_Again = true;
 						}
 						else
 						{
 							Play_Again = false;
 						}
+						
 					}
 				}
 			}
@@ -450,50 +494,7 @@ bool LoadMedia()
 			gCharacterClips[5].h = 57;
 		}
 
-		if (!enemy1.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
-		{
-			std::cout << "Failed to load enemy1 image." << std::endl;
-			success = false;
-		}
-
-		if (!enemy2.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
-		{
-			std::cout << "Failed to load enemy2 image." << std::endl;
-			success = false;
-		}
-
-		if (!enemy3.LoadFromFile("imgs/enemy/bat.png", gRenderer))
-		{
-			std::cout << "Failed to load bat enemy image." << std::endl;
-			success = false;
-		}
-		else
-		{
-			gEnemyClips[0].x = 43*3;
-			gEnemyClips[0].y = 0;
-			gEnemyClips[0].w = 43;
-			gEnemyClips[0].h = 30;
-
-			gEnemyClips[1].x = 43 * 4;
-			gEnemyClips[1].y = 0;
-			gEnemyClips[1].w = 43;
-			gEnemyClips[1].h = 30;
-
-			gEnemyClips[2].x = 43*2;
-			gEnemyClips[2].y = 0;
-			gEnemyClips[2].w = 43;
-			gEnemyClips[2].h = 30;
-
-			gEnemyClips[3].x = 43;
-			gEnemyClips[3].y = 0;
-			gEnemyClips[3].w = 43;
-			gEnemyClips[3].h = 30;
-
-			gEnemyClips[4].x = 0;
-			gEnemyClips[4].y = 0;
-			gEnemyClips[4].w = 43;
-			gEnemyClips[4].h = 30;
-		}
+		
 	}
 	return success;
 }

@@ -23,19 +23,6 @@ Enemy::Enemy(int _type)
 	EnemyTexture = nullptr;
 }
 
-Enemy::Enemy()
-{
-	posX = 0;
-	posY = 0;
-
-	eWidth = 0;
-	eHeight = 0;
-
-	type = 0;
-
-	EnemyTexture = nullptr;
-}
-
 Enemy::~Enemy()
 {
 	posX = 0;
@@ -48,6 +35,27 @@ Enemy::~Enemy()
 	if (EnemyTexture != nullptr)
 	{
 		EnemyTexture = nullptr;
+	}
+}
+
+void Enemy::SetToStart(int _type)
+{
+	posX = 0;
+	posY = 0;
+
+	eWidth = 0;
+	eHeight = 0;
+
+	type = _type;
+	if (type == IN_AIR_ENEMY)
+	{
+		posX = SCREEN_WIDTH;
+		posY = ENEMY_HEIGHT;
+	}
+	else if (type == ON_GROUND_ENEMY)
+	{
+		posX = SCREEN_WIDTH;
+		posY = GROUND - 8;
 	}
 }
 
