@@ -1,5 +1,32 @@
 #include "Game_Utils.h"
 
+/*void HandlePlayButton(SDL_Event* e, Button PlayButton, bool& QuitMenu, bool& Play)
+{
+	if (e->type == SDL_QUIT)
+	{
+		QuitMenu = true;
+	}
+
+	if (PlayButton.IsInside(e))
+	{
+		switch (e->type)
+		{
+		case SDL_MOUSEMOTION:
+			PlayButton.currentSprite = BUTTON_MOUSE_OVER;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			Play = true;
+			QuitMenu = true;
+			PlayButton.currentSprite = BUTTON_MOUSE_OVER;
+			break;
+		}
+	}
+	else
+	{
+		PlayButton.currentSprite = BUTTON_MOUSE_OUT;
+	}
+}*/
+
 int UpdateGameTime(int& time, int& speed)
 {	
 	if (time == TIME_MAX)

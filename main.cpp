@@ -86,7 +86,6 @@ int main(int argc, char* argv[])
 						switch (e_mouse.type)
 						{
 						case SDL_MOUSEMOTION:
-							cout << "insided play" << endl;
 							PlayButton.currentSprite = BUTTON_MOUSE_OVER;
 							break;
 						case SDL_MOUSEBUTTONDOWN:
@@ -100,72 +99,55 @@ int main(int argc, char* argv[])
 					{
 						PlayButton.currentSprite = BUTTON_MOUSE_OUT;
 					}
-
+						
 					if (HelpButton.IsInside(&e_mouse))
 					{
 						switch (e_mouse.type)
 						{
 						case SDL_MOUSEMOTION:
-							cout << "inside help" << endl;
 							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
 							break;
 						case SDL_MOUSEBUTTONDOWN:
 							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
-
-							/*bool ReadDone = false;
+							bool ReadDone = false;
 							while (!ReadDone)
 							{
-								cout << 1 << endl;
-								SDL_Event e_back;
-								while (SDL_PollEvent(&e_mouse) != 0)
+								do
 								{
 									if (e_mouse.type == SDL_QUIT)
 									{
 										ReadDone = true;
-										Quit_Menu = true;
+										Close();
+										return 0;
 									}
 
-									if (BackButton.IsInside(&e_mouse))
+									else if (BackButton.IsInside(&e_mouse))
 									{
-										switch (e_mouse.type)
-										{
-										case SDL_MOUSEMOTION:
-											cout << "inside back" << endl;
-											BackButton.currentSprite = BUTTON_MOUSE_OVER;
-											break;
-										case SDL_MOUSEBUTTONDOWN:
-											BackButton.currentSprite = BUTTON_MOUSE_OVER;
-											ReadDone = true;
-											break;
-										}
+											switch (e_mouse.type)
+											{
+											case SDL_MOUSEMOTION:
+												BackButton.currentSprite = BUTTON_MOUSE_OVER;
+												break;
+											case SDL_MOUSEBUTTONDOWN:
+												BackButton.currentSprite = BUTTON_MOUSE_OVER;
+												ReadDone = true;
+												break;
+											}
 									}
 									else
 									{
-										cout << 2 << endl;
 										BackButton.currentSprite = BUTTON_MOUSE_OUT;
-									}
+									}	
 
+									gInstructionTexture.Render(0, 0, gRenderer);
+									SDL_Rect* currentClip_Back = &gBackButton[BackButton.currentSprite];
+									BackButton.Render(currentClip_Back, gRenderer, gBackButtonTexture);
 									SDL_RenderPresent(gRenderer);
-								}
-								break;
-							}*/
-							
-							{
-								gInstructionTexture.Render(0, 0, gRenderer);
+								} while (SDL_PollEvent(&e_mouse) != 0 && e_mouse.type == SDL_MOUSEBUTTONDOWN || e_mouse.type == SDL_MOUSEMOTION);
 
-								SDL_Rect* currentClip_Back = &gBackButton[BackButton.currentSprite];
-								BackButton.Render(currentClip_Back, gRenderer, gBackButtonTexture);
 							}
-							break;
-						case SDL_MOUSEBUTTONUP:
-						{
-							gInstructionTexture.Render(0, 0, gRenderer);
-
-							SDL_Rect* currentClip_Back_1 = &gBackButton[BackButton.currentSprite];
-							BackButton.Render(currentClip_Back_1, gRenderer, gBackButtonTexture);
 						}
-							break;
-						}
+						break;
 					}
 					else
 					{
@@ -217,7 +199,7 @@ int main(int argc, char* argv[])
 				int frame_Enemy = 0;
 
 				SDL_Event e;
-				//Mix_PlayMusic(gMusic, -1);
+				//Mix_PlayMusic(gMusic, IS_REPETITIVE);
 				bool quit = false;
 
 				while (!quit)

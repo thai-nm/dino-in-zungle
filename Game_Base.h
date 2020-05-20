@@ -29,6 +29,9 @@
 #define SLOW_FRAME_CHAR 4
 #define SLOW_FRAME_ENEMY 4
 
+#define IS_REPEATITIVE -1
+#define NOT_REPEATITIVE 0
+
 using namespace std;
 
 

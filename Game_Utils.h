@@ -2,14 +2,15 @@
 #define GAME_UTILS_H_
 
 #include "Game_Base.h"
+#include "Button.h"
 #include "Enemy.h"
 #include "Character.h"
 
 bool Init();
-
 bool LoadMedia();
-
 void Close();
+
+//void HandlePlayButton(SDL_Event *e, Button PlayButton, bool& QuitMenu, bool& Play);
 
 int UpdateGameTime(int &time,int &speed);
 
