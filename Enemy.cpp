@@ -51,7 +51,7 @@ Enemy::~Enemy()
 	}
 }
 
-bool Enemy::LoadFromFile(string path, SDL_Renderer* gRenderer)
+bool Enemy::LoadFromFile(std::string path, SDL_Renderer* gRenderer)
 {
 	SDL_Texture* tmpTexture = nullptr;
 

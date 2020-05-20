@@ -5,11 +5,11 @@
 #include "Character.h"
 #include "Enemy.h"
 
-void renderScrollingBackground(vector <double>& scrollingOffset);
+void renderScrollingBackground(std::vector <double>& scrollingOffset);
 
 void renderScrollingGround(int& speed, const int acceleration);
 
-const string LAYER[BACKGROUND_LAYER] = {
+const std::string LAYER[BACKGROUND_LAYER] = {
 	"imgs/background/layer01.png",
 	"imgs/background/layer02.png",
 	"imgs/background/layer03.png",
@@ -68,12 +68,11 @@ int main(int argc, char* argv[])
 		else
 		{
 			bool Quit_Menu = false;
-			bool PlayAgain = false;
+			bool Play_Again = false;
 
 			while (!Quit_Menu)
 			{
 				SDL_Event e_mouse;
-				gMenuTexture.Render(0, 0, gRenderer);
 				while (SDL_PollEvent(&e_mouse) != 0)
 				{
 					if (e_mouse.type == SDL_QUIT)
@@ -81,98 +80,20 @@ int main(int argc, char* argv[])
 						Quit_Menu = true;
 					}
 
-					if (PlayButton.IsInside(&e_mouse))
-					{
-						switch (e_mouse.type)
-						{
-						case SDL_MOUSEMOTION:
-							PlayButton.currentSprite = BUTTON_MOUSE_OVER;
-							break;
-						case SDL_MOUSEBUTTONDOWN:
-							PlayAgain = true;
-							Quit_Menu = true;
-							PlayButton.currentSprite = BUTTON_MOUSE_OVER;
-							break;
-						}
-					}
-					else
-					{
-						PlayButton.currentSprite = BUTTON_MOUSE_OUT;
-					}
+					bool Quit_Game = false;
+					HandlePlayButton(&e_mouse, PlayButton, Quit_Menu, Play_Again);
 						
-					if (HelpButton.IsInside(&e_mouse))
-					{
-						switch (e_mouse.type)
-						{
-						case SDL_MOUSEMOTION:
-							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
-							break;
-						case SDL_MOUSEBUTTONDOWN:
-							HelpButton.currentSprite = BUTTON_MOUSE_OVER;
-							bool ReadDone = false;
-							while (!ReadDone)
-							{
-								do
-								{
-									if (e_mouse.type == SDL_QUIT)
-									{
-										ReadDone = true;
-										Close();
-										return 0;
-									}
+					HandleHelpButton(&e_mouse, gBackButton, HelpButton, BackButton, gInstructionTexture, gBackButtonTexture, gRenderer, Quit_Game);
 
-									else if (BackButton.IsInside(&e_mouse))
-									{
-											switch (e_mouse.type)
-											{
-											case SDL_MOUSEMOTION:
-												BackButton.currentSprite = BUTTON_MOUSE_OVER;
-												break;
-											case SDL_MOUSEBUTTONDOWN:
-												BackButton.currentSprite = BUTTON_MOUSE_OVER;
-												ReadDone = true;
-												break;
-											}
-									}
-									else
-									{
-										BackButton.currentSprite = BUTTON_MOUSE_OUT;
-									}	
+					HandleExitButton(&e_mouse, ExitButton, Quit_Menu);
 
-									gInstructionTexture.Render(0, 0, gRenderer);
-									SDL_Rect* currentClip_Back = &gBackButton[BackButton.currentSprite];
-									BackButton.Render(currentClip_Back, gRenderer, gBackButtonTexture);
-									SDL_RenderPresent(gRenderer);
-								} while (SDL_PollEvent(&e_mouse) != 0 && e_mouse.type == SDL_MOUSEBUTTONDOWN || e_mouse.type == SDL_MOUSEMOTION);
-
-							}
-						}
-						break;
-					}
-					else
+					if (Quit_Game == true)
 					{
-						HelpButton.currentSprite = BUTTON_MOUSE_OUT;
-					}
-
-					if (ExitButton.IsInside(&e_mouse))
-					{
-						switch (e_mouse.type)
-						{
-						case SDL_MOUSEMOTION:
-							cout << "inside exit" << endl;
-							ExitButton.currentSprite = BUTTON_MOUSE_OVER;
-							break;
-						case SDL_MOUSEBUTTONDOWN:
-							Quit_Menu = true;
-							ExitButton.currentSprite = BUTTON_MOUSE_OVER;
-							break;
-						}
-					}
-					else
-					{
-						ExitButton.currentSprite = BUTTON_MOUSE_OUT;
+						return 0;
 					}
 				}
+
+				gMenuTexture.Render(0, 0, gRenderer);
 
 				SDL_Rect* currentClip_Play = &gPlayButton[PlayButton.currentSprite];
 				PlayButton.Render(currentClip_Play, gRenderer, gPlayButtonTexture);
@@ -186,14 +107,14 @@ int main(int argc, char* argv[])
 				SDL_RenderPresent(gRenderer);
 			}
 
-			while (PlayAgain)
+			while (Play_Again)
 			{
 				srand(time(NULL));
 				int time = 0;
 				int acceleration = 0;
 
 				int OffsetSpeed_Ground = 0;
-				vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, 0);
+				std::vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, 0);
 
 				int frame_Character = 0;
 				int frame_Enemy = 0;
@@ -201,15 +122,17 @@ int main(int argc, char* argv[])
 				SDL_Event e;
 				//Mix_PlayMusic(gMusic, IS_REPETITIVE);
 				bool quit = false;
-
+				int i = 0;
 				while (!quit)
 				{
 					UpdateGameTime(time, acceleration);
+					std::cout << 1 << std::endl;
 
 					while (SDL_PollEvent(&e) != 0)
 					{
 						if (e.type == SDL_QUIT)
 						{
+							i++;
 							quit = true;
 						}
 
@@ -253,12 +176,12 @@ int main(int argc, char* argv[])
 
 					if (CheckColission(character, currentClip_Character, enemy1))
 					{
-						cout << "Crash 1!" << endl;
+						std::cout << "Crash 1!" << std::endl;
 						quit = true;
 					}
 					if (CheckColission(character, currentClip_Character, enemy2))
 					{
-						cout << "Crash 2!" << endl;
+						std::cout << "Crash 2!" << std::endl;
 						quit = true;
 					}
 					if (CheckColission(character, currentClip_Character, enemy3, currentClip_Enemy))
@@ -271,22 +194,23 @@ int main(int argc, char* argv[])
 
 					ControlCharFrame(frame_Character);
 					ControlEnemyFrame(frame_Enemy);
-					cout << time << endl;
-				}
 
-				cout << "Do you want to play again?" << endl;
-				int check;
-				cin >> check;
-				if (check == 1)
-				{
-					Close();
-					PlayAgain = true;
+					if (quit)
+					{
+						i++;
+						std::cout << "Do you want to play again?" << std::endl;
+						int check;
+						std::cin >> check;
+						if (check == 1)
+						{
+							Play_Again = true;
+						}
+						else
+						{
+							Play_Again = false;
+						}
+					}
 				}
-				else
-				{
-					PlayAgain = false;
-				}
-				Close();
 			}
 		}
 	}
@@ -296,9 +220,9 @@ int main(int argc, char* argv[])
 }
 
 
-void renderScrollingBackground(vector <double>& offsetSpeed)
+void renderScrollingBackground(std::vector <double>& offsetSpeed)
 {
-	vector <double> layer_speed;
+	std::vector <double> layer_speed;
 	layer_speed.push_back(0.0);
 	layer_speed.push_back(0.25);
 	layer_speed.push_back(0.5);
@@ -345,7 +269,7 @@ bool Init()
 	{
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
-			cout << "Warning: Linear texture filtering not enabled!";
+			std::cout << "Warning: Linear texture filtering not enabled!";
 		}
 
 		gWindow = SDL_CreateWindow(WINDOW_TITLE.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -399,19 +323,19 @@ bool LoadMedia()
 	{
 		if (!gMenuTexture.LoadFromFile("imgs/background/menu.png", gRenderer))
 		{
-			cout << "Failed to load menu image" << endl;
+			std::cout << "Failed to load menu image" << std::endl;
 			success = false;
 		}
 
 		if (!gInstructionTexture.LoadFromFile("imgs/background/instruction.png", gRenderer))
 		{
-			cout << "Failed to load instruction image" << endl;
+			std::cout << "Failed to load instruction image" << std::endl;
 			success = false;
 		}
 
 		if (!gPlayButtonTexture.LoadFromFile("imgs/button/big_button/play_button.png", gRenderer))
 		{
-			cout << "Failed to load play_button image" << endl;
+			std::cout << "Failed to load play_button image" << std::endl;
 			success = false;
 		}
 		else
@@ -427,7 +351,7 @@ bool LoadMedia()
 
 		if (!gHelpButtonTexture.LoadFromFile("imgs/button/big_button/help_button.png", gRenderer))
 		{
-			cout << "Failed to load help_button image" << endl;
+			std::cout << "Failed to load help_button image" << std::endl;
 			success = false;
 		}
 		else
@@ -443,7 +367,7 @@ bool LoadMedia()
 
 		if (!gBackButtonTexture.LoadFromFile("imgs/button/big_button/back_button.png", gRenderer))
 		{
-			cout << "Failed to load back_button image" << endl;
+			std::cout << "Failed to load back_button image" << std::endl;
 			success = false;
 		}
 		else
@@ -459,7 +383,7 @@ bool LoadMedia()
 
 		if (!gExitButtonTexture.LoadFromFile("imgs/button/big_button/exit_button.png", gRenderer))
 		{
-			cout << "Failed to load exit_button image" << endl;
+			std::cout << "Failed to load exit_button image" << std::endl;
 			success = false;
 		}
 		else
@@ -477,20 +401,20 @@ bool LoadMedia()
 		{
 			if (!gBackgroundTexture[i].LoadFromFile(LAYER[i].c_str(), gRenderer))
 			{
-				cout << "Failed to load background image" << endl;
+				std::cout << "Failed to load background image" << std::endl;
 				success = false;
 			}
 		}
 
 		if (!gGroundTexture.LoadFromFile("imgs/background/ground.png", gRenderer))
 		{
-			cout << "Failed to load ground image" << endl;
+			std::cout << "Failed to load ground image" << std::endl;
 			success = false;
 		}
 
 		if (!gCharacterTexture.LoadFromFile("imgs/character/char_run.png", gRenderer))
 		{
-			cout << "Failed to load character_run image." << endl;
+			std::cout << "Failed to load character_run image." << std::endl;
 			success = false;
 		}
 		else
@@ -528,19 +452,19 @@ bool LoadMedia()
 
 		if (!enemy1.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
 		{
-			cout << "Failed to load enemy1 image." << endl;
+			std::cout << "Failed to load enemy1 image." << std::endl;
 			success = false;
 		}
 
 		if (!enemy2.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
 		{
-			cout << "Failed to load enemy2 image." << endl;
+			std::cout << "Failed to load enemy2 image." << std::endl;
 			success = false;
 		}
 
 		if (!enemy3.LoadFromFile("imgs/enemy/bat.png", gRenderer))
 		{
-			cout << "Failed to load bat enemy image." << endl;
+			std::cout << "Failed to load bat enemy image." << std::endl;
 			success = false;
 		}
 		else

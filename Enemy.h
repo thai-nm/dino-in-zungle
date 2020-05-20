@@ -14,7 +14,7 @@ public:
 	
 	~Enemy();
 
-	bool LoadFromFile(string path, SDL_Renderer* gRenderer);
+	bool LoadFromFile(std::string path, SDL_Renderer* gRenderer);
 
 	void Move(const int& acceleration);
 

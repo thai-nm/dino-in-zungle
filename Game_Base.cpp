@@ -1,21 +1,21 @@
 #include "Game_Base.h"
 
-void LogError(string msg, int error_code)
+void LogError(std::string msg, int error_code)
 {
 	if (error_code == SDL_ERROR)
 	{
-		cout << msg << SDL_GetError() << endl;
+		std::cout << msg << SDL_GetError() << std::endl;
 	}
 	if (error_code == IMG_ERROR)
 	{
-		cout << msg << IMG_GetError() << endl;
+		std::cout << msg << IMG_GetError() << std::endl;
 	}
 	if (error_code == MIX_ERROR)
 	{
-		cout << msg << Mix_GetError() << endl;
+		std::cout << msg << Mix_GetError() << std::endl;
 	}
 	if (error_code == TTF_ERROR)
 	{
-		cout << msg << TTF_GetError() << endl;
+		std::cout << msg << TTF_GetError() << std::endl;
 	}
 }

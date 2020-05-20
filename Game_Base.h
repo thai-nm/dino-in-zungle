@@ -32,13 +32,11 @@
 #define IS_REPEATITIVE -1
 #define NOT_REPEATITIVE 0
 
-using namespace std;
-
 
 const int SCREEN_WIDTH = 928;
 const int SCREEN_HEIGHT = 522;
 
-const string WINDOW_TITLE = "Dino in jungle";
+const std::string WINDOW_TITLE = "Dino in jungle";
 
 const int BUTTON_WIDTH = 150;
 const int BUTTON_HEIGHT = 98;
@@ -53,7 +51,7 @@ enum ButtonSprite
 	BUTTON_TOTAL = 2
 };
 
-void LogError(string msg, int error_code = SDL_ERROR);
+void LogError(std::string msg, int error_code = SDL_ERROR);
 
 #endif // !GAME_LIB_
 
