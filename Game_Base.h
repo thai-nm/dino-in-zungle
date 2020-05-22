@@ -19,6 +19,8 @@
 #define GROUND 430
 #define MAX_HEIGHT 250
 
+#define BASE_OFFSET_SPEED 0
+
 #define GROUND_SPEED 5
 #define ENEMY_SPEED 5
 #define MAX_ENEMY_WIDTH 100

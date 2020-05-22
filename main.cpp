@@ -5,10 +5,6 @@
 #include "Character.h"
 #include "Enemy.h"
 
-void renderScrollingBackground(std::vector <double>& scrollingOffset);
-
-void renderScrollingGround(int& speed, const int acceleration);
-
 const std::string LAYER[BACKGROUND_LAYER] = {
 	"imgs/background/layer01.png",
 	"imgs/background/layer02.png",
@@ -47,6 +43,7 @@ LTexture gBackButtonTexture;
 LTexture gPauseButtonTexture;
 LTexture gContinueButtonTexture;
 LTexture gPlayAgainButtonTexture;
+LTexture gLoseTexture;
 
 
 Button PlayButton(389, 186);
@@ -116,29 +113,29 @@ int main(int argc, char* argv[])
 
 			while (Play_Again)
 			{
+				srand(time(NULL));
+				int time = 0;
+				int acceleration = 0;
+				int frame_Character = 0;
+				int frame_Enemy = 0;
+
 				Enemy enemy1(ON_GROUND_ENEMY);
 				Enemy enemy2(ON_GROUND_ENEMY);
 				Enemy enemy3(IN_AIR_ENEMY);
 
 				GenerateEnemy(enemy1, enemy2, enemy3, gEnemyClips, gRenderer);
 
-				srand(time(NULL));
-				int time = 0;
-				int acceleration = 0;
-
-				int OffsetSpeed_Ground = 0;
-				std::vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, 0);
-
-				int frame_Character = 0;
-				int frame_Enemy = 0;
+				int OffsetSpeed_Ground = BASE_OFFSET_SPEED;
+				std::vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, BASE_OFFSET_SPEED);
 
 				SDL_Event e;
 				//Mix_PlayMusic(gMusic, IS_REPEATITIVE);
+
 				bool Quit = false;
-				bool game_state = true;
+				bool Game_State = true;
 				while (!Quit)
 				{
-					if (game_state)
+					if (Game_State)
 					{
 						UpdateGameTime(time, acceleration);
 
@@ -150,15 +147,15 @@ int main(int argc, char* argv[])
 								Play_Again = false;
 							}
 
-							HandlePauseButton(&e, gRenderer, gContinueButton, PauseButton, ContinueButton, gContinueButtonTexture, game_state);
+							HandlePauseButton(&e, gRenderer, gContinueButton, PauseButton, ContinueButton, gContinueButtonTexture, Game_State);
 
 							character.HandleEvent(e);
 						}
 						SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 						SDL_RenderClear(gRenderer);
 
-						renderScrollingBackground(OffsetSpeed_Bkgr);
-						renderScrollingGround(OffsetSpeed_Ground, acceleration);
+						renderScrollingBackground(OffsetSpeed_Bkgr, gBackgroundTexture, gRenderer);
+						renderScrollingGround(OffsetSpeed_Ground, acceleration, gGroundTexture, gRenderer);
 
 						character.Move();
 						SDL_Rect* currentClip_Character = nullptr;
@@ -189,15 +186,7 @@ int main(int argc, char* argv[])
 						enemy3.Render(gRenderer, currentClip_Enemy);
 
 
-						if (CheckColission(character, currentClip_Character, enemy1))
-						{
-							Quit = true;
-						}
-						if (CheckColission(character, currentClip_Character, enemy2))
-						{
-							Quit = true;
-						}
-						if (CheckColission(character, currentClip_Character, enemy3, currentClip_Enemy))
+						if(CheckEnemyColission(character, currentClip_Character, enemy1, enemy2, enemy3, currentClip_Enemy))
 						{
 							Quit = true;
 						}
@@ -212,26 +201,7 @@ int main(int argc, char* argv[])
 					}
 				}
 
-				bool End_Game = false;
-				while (!End_Game)
-				{
-					while (SDL_PollEvent(&e) != 0)
-					{
-						if (e.type == SDL_QUIT)
-						{
-							Play_Again = false;
-						}
-
-						HandleExitButton(&e, ExitButton, End_Game);
-					}
-
-					SDL_Rect* currentClip_Exit = &gExitButton[ExitButton.currentSprite];
-					ExitButton.Render(currentClip_Exit, gRenderer, gExitButtonTexture);
-
-					SDL_RenderPresent(gRenderer);
-				}
-				
-				if (End_Game) { Play_Again = false; }
+				DrawEndGameSelection(gLoseTexture, &e, gRenderer, Play_Again);
 			}
 		}
 	}
@@ -240,42 +210,6 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-
-void renderScrollingBackground(std::vector <double>& offsetSpeed)
-{
-	std::vector <double> layer_speed;
-	layer_speed.push_back(0.0);
-	layer_speed.push_back(0.25);
-	layer_speed.push_back(0.5);
-	layer_speed.push_back(0.75);
-	layer_speed.push_back(1.0);
-	layer_speed.push_back(1.25);
-	layer_speed.push_back(1.5);
-	layer_speed.push_back(1.75);
-	layer_speed.push_back(2.0);
-
-	for (int i = 0; i < BACKGROUND_LAYER; ++i)
-	{
-		offsetSpeed[i] -= layer_speed[i];
-		if (offsetSpeed[i] < -gBackgroundTexture[i].GetWidth())
-		{
-			offsetSpeed[i] = 0;
-		}
-		gBackgroundTexture[i].Render(offsetSpeed[i], 0, gRenderer);
-		gBackgroundTexture[i].Render(offsetSpeed[i] + gBackgroundTexture[i].GetWidth(), 0, gRenderer);
-	}
-}
-
-void renderScrollingGround(int& speed, const int acceleration)
-{
-	speed -= GROUND_SPEED + acceleration;
-	if (speed < -gGroundTexture.GetWidth())
-	{
-		speed = 0;
-	}
-	gGroundTexture.Render(speed, 0, gRenderer);
-	gGroundTexture.Render(speed + gGroundTexture.GetWidth(), 0, gRenderer);
-}
 
 bool Init()
 {
@@ -503,7 +437,11 @@ bool LoadMedia()
 			gCharacterClips[5].h = 57;
 		}
 
-		
+		if (!gLoseTexture.LoadFromFile("imgs/background/lose.png", gRenderer))
+		{
+			std::cout << "Failed to load lose image." << std::endl;
+			success = false;
+		}
 	}
 	return success;
 }

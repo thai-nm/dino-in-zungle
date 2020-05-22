@@ -1,5 +1,41 @@
 #include "Game_Utils.h"
 
+void renderScrollingBackground(std::vector <double>& offsetSpeed, LTexture (&gBackgroundTexture)[BACKGROUND_LAYER], SDL_Renderer *gRenderer)
+{
+	std::vector <double> layer_speed;
+	layer_speed.push_back(0.0);
+	layer_speed.push_back(0.25);
+	layer_speed.push_back(0.5);
+	layer_speed.push_back(0.75);
+	layer_speed.push_back(1.0);
+	layer_speed.push_back(1.25);
+	layer_speed.push_back(1.5);
+	layer_speed.push_back(1.75);
+	layer_speed.push_back(2.0);
+
+	for (int i = 0; i < BACKGROUND_LAYER; ++i)
+	{
+		offsetSpeed[i] -= layer_speed[i];
+		if (offsetSpeed[i] < -gBackgroundTexture[i].GetWidth())
+		{
+			offsetSpeed[i] = 0;
+		}
+		gBackgroundTexture[i].Render(offsetSpeed[i], 0, gRenderer);
+		gBackgroundTexture[i].Render(offsetSpeed[i] + gBackgroundTexture[i].GetWidth(), 0, gRenderer);
+	}
+}
+
+void renderScrollingGround(int& speed, const int acceleration, LTexture gGroundTexture, SDL_Renderer *gRenderer)
+{
+	speed -= GROUND_SPEED + acceleration;
+	if (speed < -gGroundTexture.GetWidth())
+	{
+		speed = 0;
+	}
+	gGroundTexture.Render(speed, 0, gRenderer);
+	gGroundTexture.Render(speed + gGroundTexture.GetWidth(), 0, gRenderer);
+}
+
 void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Play)
 {
 	if (e->type == SDL_QUIT)
@@ -107,7 +143,45 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit)
 	}
 }
 
-void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &game_state)
+void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture, SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], bool& Game_State)
+{
+	bool Back_To_Game = false;
+	while (!Back_To_Game)
+	{
+		do
+		{
+			if (ContinueButton.IsInside(e, SMALL_BUTTON))
+			{
+				switch (e->type)
+				{
+				case SDL_MOUSEMOTION:
+					std::cout << "inside" << std::endl;
+					ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
+
+
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+				{
+					ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
+					Game_State = true;
+					Back_To_Game = true;
+				}
+				break;
+				}
+			}
+			else
+			{
+				ContinueButton.currentSprite = BUTTON_MOUSE_OUT;
+			}
+
+			SDL_Rect* currentClip_Continue = &gContinueButton[ContinueButton.currentSprite];
+			ContinueButton.Render(currentClip_Continue, gRenderer, gContinueButtonTexture);
+			SDL_RenderPresent(gRenderer);
+		} while (SDL_WaitEvent(e) != 0 && e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEMOTION);
+	}
+}
+
+void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &Game_State)
 {
 	if (PauseButton.IsInside(e, SMALL_BUTTON))
 	{
@@ -120,41 +194,9 @@ void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContin
 			PauseButton.currentSprite = BUTTON_MOUSE_OVER;
 			break;
 		case SDL_MOUSEBUTTONUP:
-			game_state = false;
-			bool Back_To_Game = false;
-			while (!Back_To_Game)
-			{
-				do
-				{
-					if (ContinueButton.IsInside(e, SMALL_BUTTON))
-					{
-						switch (e->type)
-						{
-						case SDL_MOUSEMOTION:
-							std::cout << "inside" << std::endl;
-							ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
-							
-
-							break;
-						case SDL_MOUSEBUTTONDOWN:
-						{
-							ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
-							game_state = true;
-							Back_To_Game = true;
-						}
-							break;
-						}
-					}
-					else
-					{
-						ContinueButton.currentSprite = BUTTON_MOUSE_OUT;
-					}
-
-					SDL_Rect* currentClip_Continue = &gContinueButton[ContinueButton.currentSprite];
-					ContinueButton.Render(currentClip_Continue, gRenderer, gContinueButtonTexture);
-					SDL_RenderPresent(gRenderer);
-				} while (SDL_WaitEvent(e) != 0 && e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEMOTION);
-			}
+			Game_State = false;
+			HandleContinueButton(ContinueButton, gContinueButtonTexture, e, gRenderer, gContinueButton, Game_State);
+			break;
 		}
 	}
 	else
@@ -162,8 +204,6 @@ void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContin
 		PauseButton.currentSprite = BUTTON_MOUSE_OUT;
 	}
 }
-
-void HandlePlayAgainButton();
 
 void GenerateEnemy(Enemy& enemy1, Enemy& enemy2, Enemy& enemy3, SDL_Rect(&gEnemyClips)[FLYING_FRAMES], SDL_Renderer * gRenderer)
 {
@@ -312,6 +352,23 @@ bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_R
 	return collide;
 }
 
+bool CheckEnemyColission(Character character, SDL_Rect* char_clip, Enemy enemy1, Enemy enemy2, Enemy enemy3, SDL_Rect* enemy_clip)
+{
+	if (CheckColission(character, char_clip, enemy1))
+	{
+		return true;
+	}
+	else if (CheckColission(character, char_clip, enemy2))
+	{
+		return true;
+	}
+	else if (CheckColission(character, char_clip, enemy3, enemy_clip))
+	{
+		return true;
+	}
+	return false;
+}
+
 void ControlCharFrame(int &frame)
 {
 	frame += 1;
@@ -327,5 +384,38 @@ void ControlEnemyFrame(int &frame)
 	if (frame / SLOW_FRAME_ENEMY >= FLYING_FRAMES)
 	{
 		frame = 0;
+	}
+}
+
+void DrawEndGameSelection(LTexture gLoseTexture, SDL_Event *e, SDL_Renderer *gRenderer, bool &Play_Again)
+{
+	bool End_Game = false;
+	while (!End_Game)
+	{
+		while (SDL_PollEvent(e) != 0)
+		{
+			if (e->type == SDL_QUIT)
+			{
+				Play_Again = false;
+			}
+
+			if (e->type == SDL_KEYDOWN)
+			{
+				switch (e->key.keysym.sym)
+				{
+				case SDLK_SPACE:
+					End_Game = true;
+					break;
+				case SDLK_ESCAPE:
+					End_Game = true;
+					Play_Again = false;
+					break;
+				}
+			}
+		}
+
+		gLoseTexture.Render(0, 0, gRenderer);
+
+		SDL_RenderPresent(gRenderer);
 	}
 }

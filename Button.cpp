@@ -16,6 +16,12 @@ Button::Button(int x, int y)
 	currentSprite = BUTTON_MOUSE_OUT;
 }
 
+void Button::SetPosition(int x, int y)
+{
+	position.x = x;
+	position.y = y;
+}
+
 bool Button::IsInside(SDL_Event *e, int size)
 {
 	if (e->type == SDL_MOUSEMOTION || e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEBUTTONUP)
