@@ -7,7 +7,7 @@ void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Pl
 		QuitMenu = true;
 	}
 
-	if (PlayButton.IsInside(e))
+	if (PlayButton.IsInside(e, COMMON_BUTTON))
 	{
 		switch (e->type)
 		{
@@ -29,7 +29,7 @@ void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Pl
 
 void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton, LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer *gRenderer, bool &Quit_game)
 {
-	if (HelpButton.IsInside(e))
+	if (HelpButton.IsInside(e, COMMON_BUTTON))
 	{
 		switch (e->type)
 		{
@@ -51,7 +51,7 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 						Close();
 					}
 
-					else if (BackButton.IsInside(e))
+					else if (BackButton.IsInside(e, COMMON_BUTTON))
 					{
 						switch (e->type)
 						{
@@ -86,9 +86,9 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 	}
 }
 
-void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& QuitMenu)
+void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit)
 {
-	if (ExitButton.IsInside(e))
+	if (ExitButton.IsInside(e, COMMON_BUTTON))
 	{
 		switch (e->type)
 		{
@@ -96,7 +96,7 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& QuitMenu)
 			ExitButton.currentSprite = BUTTON_MOUSE_OVER;
 			break;
 		case SDL_MOUSEBUTTONDOWN:
-			QuitMenu = true;
+			Quit = true;
 			ExitButton.currentSprite = BUTTON_MOUSE_OVER;
 			break;
 		}
@@ -104,6 +104,97 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& QuitMenu)
 	else
 	{
 		ExitButton.currentSprite = BUTTON_MOUSE_OUT;
+	}
+}
+
+void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &game_state)
+{
+	if (PauseButton.IsInside(e, SMALL_BUTTON))
+	{
+		switch (e->type)
+		{
+		case SDL_MOUSEMOTION:
+			PauseButton.currentSprite = BUTTON_MOUSE_OVER;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			PauseButton.currentSprite = BUTTON_MOUSE_OVER;
+			break;
+		case SDL_MOUSEBUTTONUP:
+			game_state = false;
+			bool Back_To_Game = false;
+			while (!Back_To_Game)
+			{
+				do
+				{
+					if (ContinueButton.IsInside(e, SMALL_BUTTON))
+					{
+						switch (e->type)
+						{
+						case SDL_MOUSEMOTION:
+							std::cout << "inside" << std::endl;
+							ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
+							
+
+							break;
+						case SDL_MOUSEBUTTONDOWN:
+						{
+							ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
+							game_state = true;
+							Back_To_Game = true;
+						}
+							break;
+						}
+					}
+					else
+					{
+						ContinueButton.currentSprite = BUTTON_MOUSE_OUT;
+					}
+
+					SDL_Rect* currentClip_Continue = &gContinueButton[ContinueButton.currentSprite];
+					ContinueButton.Render(currentClip_Continue, gRenderer, gContinueButtonTexture);
+					SDL_RenderPresent(gRenderer);
+				} while (SDL_WaitEvent(e) != 0 && e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEMOTION);
+			}
+		}
+	}
+	else
+	{
+		PauseButton.currentSprite = BUTTON_MOUSE_OUT;
+	}
+}
+
+void HandlePlayAgainButton();
+
+void GenerateEnemy(Enemy& enemy1, Enemy& enemy2, Enemy& enemy3, SDL_Rect(&gEnemyClips)[FLYING_FRAMES], SDL_Renderer * gRenderer)
+{
+	enemy1.LoadFromFile("imgs/enemy/cactus.png", gRenderer);
+	enemy2.LoadFromFile("imgs/enemy/cactus.png", gRenderer);
+	enemy3.LoadFromFile("imgs/enemy/bat.png", gRenderer);
+	{
+		gEnemyClips[0].x = 43 * 3;
+		gEnemyClips[0].y = 0;
+		gEnemyClips[0].w = 43;
+		gEnemyClips[0].h = 30;
+
+		gEnemyClips[1].x = 43 * 4;
+		gEnemyClips[1].y = 0;
+		gEnemyClips[1].w = 43;
+		gEnemyClips[1].h = 30;
+
+		gEnemyClips[2].x = 43 * 2;
+		gEnemyClips[2].y = 0;
+		gEnemyClips[2].w = 43;
+		gEnemyClips[2].h = 30;
+
+		gEnemyClips[3].x = 43;
+		gEnemyClips[3].y = 0;
+		gEnemyClips[3].w = 43;
+		gEnemyClips[3].h = 30;
+
+		gEnemyClips[4].x = 0;
+		gEnemyClips[4].y = 0;
+		gEnemyClips[4].w = 43;
+		gEnemyClips[4].h = 30;
 	}
 }
 

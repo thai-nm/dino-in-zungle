@@ -38,28 +38,7 @@ Enemy::~Enemy()
 	}
 }
 
-void Enemy::SetToStart(int _type)
-{
-	posX = 0;
-	posY = 0;
-
-	eWidth = 0;
-	eHeight = 0;
-
-	type = _type;
-	if (type == IN_AIR_ENEMY)
-	{
-		posX = SCREEN_WIDTH;
-		posY = ENEMY_HEIGHT;
-	}
-	else if (type == ON_GROUND_ENEMY)
-	{
-		posX = SCREEN_WIDTH;
-		posY = GROUND - 8;
-	}
-}
-
-bool Enemy::LoadFromFile(std::string path, SDL_Renderer* gRenderer)
+void Enemy::LoadFromFile(std::string path, SDL_Renderer* gRenderer)
 {
 	SDL_Texture* tmpTexture = nullptr;
 
@@ -87,8 +66,6 @@ bool Enemy::LoadFromFile(std::string path, SDL_Renderer* gRenderer)
 	}
 
 	EnemyTexture = tmpTexture;
-
-	return EnemyTexture != nullptr;
 }
 
 void Enemy::Move(const int &acceleration)

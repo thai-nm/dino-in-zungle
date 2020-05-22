@@ -27,8 +27,11 @@ Mix_Music* gMusic = nullptr;
 
 SDL_Rect gPlayButton[BUTTON_TOTAL];
 SDL_Rect gHelpButton[BUTTON_TOTAL];
-SDL_Rect gBackButton[BUTTON_TOTAL];
 SDL_Rect gExitButton[BUTTON_TOTAL];
+SDL_Rect gBackButton[BUTTON_TOTAL];
+SDL_Rect gPauseButton[BUTTON_TOTAL];
+SDL_Rect gContinueButton[BUTTON_TOTAL];
+SDL_Rect gPlayAgainButton[BUTTON_TOTAL];
 SDL_Rect gCharacterClips[RUNNING_FRAMES];
 SDL_Rect gEnemyClips[FLYING_FRAMES];
 
@@ -39,13 +42,21 @@ LTexture gCharacterTexture;
 LTexture gGroundTexture;
 LTexture gPlayButtonTexture;
 LTexture gHelpButtonTexture;
-LTexture gBackButtonTexture;
 LTexture gExitButtonTexture;
+LTexture gBackButtonTexture;
+LTexture gPauseButtonTexture;
+LTexture gContinueButtonTexture;
+LTexture gPlayAgainButtonTexture;
+
 
 Button PlayButton(389, 186);
 Button HelpButton(389, 293);
 Button ExitButton(389, 402);
 Button BackButton(31, 29);
+Button PauseButton(31, 29);
+Button ContinueButton(31, 29);
+Button PlayAgainButton(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+
 
 Character character;
 
@@ -109,50 +120,7 @@ int main(int argc, char* argv[])
 				Enemy enemy2(ON_GROUND_ENEMY);
 				Enemy enemy3(IN_AIR_ENEMY);
 
-				if (!enemy1.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
-				{
-					std::cout << "Failed to load enemy1 image." << std::endl;
-					//success = false;
-				}
-
-				if (!enemy2.LoadFromFile("imgs/enemy/cactus.png", gRenderer))
-				{
-					std::cout << "Failed to load enemy2 image." << std::endl;
-					//success = false;
-				}
-
-				if (!enemy3.LoadFromFile("imgs/enemy/bat.png", gRenderer))
-				{
-					std::cout << "Failed to load bat enemy image." << std::endl;
-					//success = false;
-				}
-				else
-				{
-					gEnemyClips[0].x = 43 * 3;
-					gEnemyClips[0].y = 0;
-					gEnemyClips[0].w = 43;
-					gEnemyClips[0].h = 30;
-
-					gEnemyClips[1].x = 43 * 4;
-					gEnemyClips[1].y = 0;
-					gEnemyClips[1].w = 43;
-					gEnemyClips[1].h = 30;
-
-					gEnemyClips[2].x = 43 * 2;
-					gEnemyClips[2].y = 0;
-					gEnemyClips[2].w = 43;
-					gEnemyClips[2].h = 30;
-
-					gEnemyClips[3].x = 43;
-					gEnemyClips[3].y = 0;
-					gEnemyClips[3].w = 43;
-					gEnemyClips[3].h = 30;
-
-					gEnemyClips[4].x = 0;
-					gEnemyClips[4].y = 0;
-					gEnemyClips[4].w = 43;
-					gEnemyClips[4].h = 30;
-				}
+				GenerateEnemy(enemy1, enemy2, enemy3, gEnemyClips, gRenderer);
 
 				srand(time(NULL));
 				int time = 0;
@@ -166,95 +134,104 @@ int main(int argc, char* argv[])
 
 				SDL_Event e;
 				//Mix_PlayMusic(gMusic, IS_REPEATITIVE);
-				bool quit = false;
-				while (!quit)
+				bool Quit = false;
+				bool game_state = true;
+				while (!Quit)
 				{
-					UpdateGameTime(time, acceleration);
+					if (game_state)
+					{
+						UpdateGameTime(time, acceleration);
 
+						while (SDL_PollEvent(&e) != 0)
+						{
+							if (e.type == SDL_QUIT)
+							{
+								Quit = true;
+								Play_Again = false;
+							}
+
+							HandlePauseButton(&e, gRenderer, gContinueButton, PauseButton, ContinueButton, gContinueButtonTexture, game_state);
+
+							character.HandleEvent(e);
+						}
+						SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+						SDL_RenderClear(gRenderer);
+
+						renderScrollingBackground(OffsetSpeed_Bkgr);
+						renderScrollingGround(OffsetSpeed_Ground, acceleration);
+
+						character.Move();
+						SDL_Rect* currentClip_Character = nullptr;
+						if (character.OnGround())
+						{
+							currentClip_Character = &gCharacterClips[frame_Character / SLOW_FRAME_CHAR];
+							character.Render(currentClip_Character, gRenderer, gCharacterTexture);
+						}
+						else
+						{
+							currentClip_Character = &gCharacterClips[0];
+							character.Render(currentClip_Character, gRenderer, gCharacterTexture);
+						}
+
+						if (AppearanceTime_1(time, enemy1.GetSpeed(acceleration)))
+						{
+							enemy1.Move(acceleration);
+							enemy1.Render(gRenderer);
+						}
+						if (AppearanceTime_2(time, enemy1.GetSpeed(acceleration)))
+						{
+							enemy2.Move(acceleration);
+							enemy2.Render(gRenderer);
+						}
+
+						SDL_Rect* currentClip_Enemy = &gEnemyClips[frame_Enemy / 4];
+						enemy3.Move(acceleration);
+						enemy3.Render(gRenderer, currentClip_Enemy);
+
+
+						if (CheckColission(character, currentClip_Character, enemy1))
+						{
+							Quit = true;
+						}
+						if (CheckColission(character, currentClip_Character, enemy2))
+						{
+							Quit = true;
+						}
+						if (CheckColission(character, currentClip_Character, enemy3, currentClip_Enemy))
+						{
+							Quit = true;
+						}
+
+						SDL_Rect* currentClip_Pause = &gPauseButton[PauseButton.currentSprite];
+						PauseButton.Render(currentClip_Pause, gRenderer, gPauseButtonTexture);
+
+						SDL_RenderPresent(gRenderer);
+
+						ControlCharFrame(frame_Character);
+						ControlEnemyFrame(frame_Enemy);
+					}
+				}
+
+				bool End_Game = false;
+				while (!End_Game)
+				{
 					while (SDL_PollEvent(&e) != 0)
 					{
 						if (e.type == SDL_QUIT)
 						{
-							quit = true;
-						}
-
-						character.HandleEvent(e);
-					}
-					SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-					SDL_RenderClear(gRenderer);
-
-
-					renderScrollingBackground(OffsetSpeed_Bkgr);
-					renderScrollingGround(OffsetSpeed_Ground, acceleration);
-
-					character.Move();
-					SDL_Rect* currentClip_Character = nullptr;
-					if (character.OnGround())
-					{
-						currentClip_Character = &gCharacterClips[frame_Character / SLOW_FRAME_CHAR];
-						character.Render(currentClip_Character, gRenderer, gCharacterTexture);
-					}
-					else
-					{
-						currentClip_Character = &gCharacterClips[0];
-						character.Render(currentClip_Character, gRenderer, gCharacterTexture);
-					}
-
-					if (AppearanceTime_1(time, enemy1.GetSpeed(acceleration)))
-					{
-						enemy1.Move(acceleration);
-						enemy1.Render(gRenderer);
-					}
-					if (AppearanceTime_2(time, enemy1.GetSpeed(acceleration)))
-					{
-						enemy2.Move(acceleration);
-						enemy2.Render(gRenderer);
-					}
-
-					SDL_Rect* currentClip_Enemy = &gEnemyClips[frame_Enemy / 4];
-					enemy3.Move(acceleration);
-					enemy3.Render(gRenderer, currentClip_Enemy);
-
-
-					if (CheckColission(character, currentClip_Character, enemy1))
-					{
-						std::cout << "Crash 1!" << std::endl;
-						quit = true;
-					}
-					if (CheckColission(character, currentClip_Character, enemy2))
-					{
-						std::cout << "Crash 2!" << std::endl;
-						quit = true;
-					}
-					if (CheckColission(character, currentClip_Character, enemy3, currentClip_Enemy))
-					{
-						quit = true;
-					}
-
-					SDL_RenderPresent(gRenderer);
-
-					ControlCharFrame(frame_Character);
-					ControlEnemyFrame(frame_Enemy);
-
-					if (quit)
-					{
-						std::cout << "Do you want to play again?" << std::endl;
-						int check;
-						std::cin >> check;
-						if (check == 1)
-						{
-							enemy1.SetToStart(ON_GROUND_ENEMY);
-							enemy2.SetToStart(ON_GROUND_ENEMY);
-							enemy3.SetToStart(IN_AIR_ENEMY);
-							Play_Again = true;
-						}
-						else
-						{
 							Play_Again = false;
 						}
-						
+
+						HandleExitButton(&e, ExitButton, End_Game);
 					}
+
+					SDL_Rect* currentClip_Exit = &gExitButton[ExitButton.currentSprite];
+					ExitButton.Render(currentClip_Exit, gRenderer, gExitButtonTexture);
+
+					SDL_RenderPresent(gRenderer);
 				}
+				
+				if (End_Game) { Play_Again = false; }
 			}
 		}
 	}
@@ -438,6 +415,38 @@ bool LoadMedia()
 				gExitButton[i].y = 0;
 				gExitButton[i].w = 150;
 				gExitButton[i].h = 98;
+			}
+		}
+
+		if (!gPauseButtonTexture.LoadFromFile("imgs/button/big_button/pause_button.png", gRenderer))
+		{
+			std::cout << "Failed to load pause_button image " << std::endl;
+			success = false;
+		}
+		else
+		{
+			for (int i = 0; i < BUTTON_TOTAL; ++i)
+			{
+				gPauseButton[i].x = 30 * i;
+				gPauseButton[i].y = 0;
+				gPauseButton[i].w = 30;
+				gPauseButton[i].h = 23;
+			}
+		}
+
+		if (!gContinueButtonTexture.LoadFromFile("imgs/button/big_button/continue_button.png", gRenderer))
+		{
+			std::cout << "Failed to load continue_button image " << std::endl;
+			success = false;
+		}
+		else
+		{
+			for (int i = 0; i < BUTTON_TOTAL; ++i)
+			{
+				gContinueButton[i].x = 30 * i;
+				gContinueButton[i].y = 0;
+				gContinueButton[i].w = 30;
+				gContinueButton[i].h = 23;
 			}
 		}
 

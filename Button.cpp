@@ -16,11 +16,23 @@ Button::Button(int x, int y)
 	currentSprite = BUTTON_MOUSE_OUT;
 }
 
-bool Button::IsInside(SDL_Event *e)
+bool Button::IsInside(SDL_Event *e, int size)
 {
 	if (e->type == SDL_MOUSEMOTION || e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEBUTTONUP)
 	{
 		int x, y;
+		int button_width, button_height;
+		if (size == SMALL_BUTTON)
+		{
+			button_width = SMALL_BUTTON_WIDTH;
+			button_height = SMALL_BUTTON_HEIGHT;
+		}
+		else
+		{
+			button_width = COMMON_BUTTON_WIDTH;
+			button_height = COMMON_BUTTON_HEIGHT;
+		}
+
 		SDL_GetMouseState(&x, &y);
 
 		bool inside = true;
@@ -28,7 +40,7 @@ bool Button::IsInside(SDL_Event *e)
 		{
 			inside = false;
 		}
-		else if (x > position.x + BUTTON_WIDTH)
+		else if (x > position.x + button_width)
 		{
 			inside = false;
 		}
@@ -36,7 +48,7 @@ bool Button::IsInside(SDL_Event *e)
 		{
 			inside = false;
 		}
-		else if (y > position.y + BUTTON_HEIGHT)
+		else if (y > position.y + button_height)
 		{
 			inside = false;
 		}

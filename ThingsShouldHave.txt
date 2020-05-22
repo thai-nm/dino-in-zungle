@@ -1,0 +1,6 @@
+- Khi bị va chạm với vật cản, đổi ảnh của nhân vật.
+- Hiện nút Play Again.
+- Hiện nút Pause và làm mờ màn hình đằng sau khi ấn Pause.
+- Hiện điểm.
+- Chỉnh phần sinh ngẫu nhiên.
+- Chỉnh va chạm.

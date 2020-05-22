@@ -11,10 +11,8 @@ public:
 	Enemy(int _type = 0);
 	
 	~Enemy();
-	
-	void SetToStart(int _type);
 
-	bool LoadFromFile(std::string path, SDL_Renderer* gRenderer);
+	void LoadFromFile(std::string path, SDL_Renderer* gRenderer);
 
 	void Move(const int& acceleration);
 

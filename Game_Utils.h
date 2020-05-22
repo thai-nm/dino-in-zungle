@@ -14,7 +14,13 @@ void HandlePlayButton(SDL_Event *e, Button &PlayButton, bool& QuitMenu, bool& Pl
 
 void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton, LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer* gRenderer, bool& Quit_game);
 
-void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& QuitMenu);
+void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit);
+
+void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &game_state);
+
+void HandlePlayAgainButton();
+
+void GenerateEnemy(Enemy &enemy1, Enemy &enemy2, Enemy &enemy3, SDL_Rect (&gEnemyClips)[FLYING_FRAMES], SDL_Renderer *gRenderer);
 
 int UpdateGameTime(int &time,int &speed);
 
