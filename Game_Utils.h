@@ -16,17 +16,20 @@ void renderScrollingGround(int& speed, const int acceleration, LTexture gGroundT
 
 void HandlePlayButton(SDL_Event *e, Button &PlayButton, bool& QuitMenu, bool& Play);
 
-void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton, LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer* gRenderer, bool& Quit_game);
+void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton,
+    LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer* gRenderer, bool& Quit_game);
 
 void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit);
 
-void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture, SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], bool& Game_State);
+void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture, SDL_Event* e,
+    SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], bool& Game_State);
 
-void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &game_state);
+void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL],
+    Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool& game_state);
 
 void GenerateEnemy(Enemy &enemy1, Enemy &enemy2, Enemy &enemy3, SDL_Rect (&gEnemyClips)[FLYING_FRAMES], SDL_Renderer *gRenderer);
 
-int UpdateGameTime(int &time,int &speed);
+int UpdateGameTimeAndScore(int &time,int &speed, int& score);
 
 bool AppearanceTime_1(const int& time, const int& enemy_speed);
 
@@ -36,9 +39,11 @@ bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_R
 
 bool CheckEnemyColission(Character character, SDL_Rect* char_clip, Enemy enemy1, Enemy enemy2, Enemy enemy3, SDL_Rect* enemy_clip = nullptr);
 
-void ControlCharFrame(int &frame);
+void ControlCharFrame(int& frame);
 
-void ControlEnemyFrame(int &frame);
+void ControlEnemyFrame(int& frame);
+
+void DrawPlayerScore(LTexture gTextTexture, LTexture gScoreTexture, SDL_Color textColor, SDL_Renderer* gRenderer, TTF_Font* gFont, const int& score);
 
 void DrawEndGameSelection(LTexture gLoseTexture, SDL_Event* e, SDL_Renderer* gRenderer, bool& Play_Again);
 

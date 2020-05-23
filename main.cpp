@@ -19,7 +19,9 @@ const std::string LAYER[BACKGROUND_LAYER] = {
 
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
+SDL_Color textColor = { 0, 0, 0 };
 Mix_Music* gMusic = nullptr;
+TTF_Font* gFont = nullptr;
 
 SDL_Rect gPlayButton[BUTTON_TOTAL];
 SDL_Rect gHelpButton[BUTTON_TOTAL];
@@ -44,6 +46,8 @@ LTexture gPauseButtonTexture;
 LTexture gContinueButtonTexture;
 LTexture gPlayAgainButtonTexture;
 LTexture gLoseTexture;
+LTexture gTextTexture;
+LTexture gScoreTexture;
 
 
 Button PlayButton(389, 186);
@@ -115,6 +119,7 @@ int main(int argc, char* argv[])
 			{
 				srand(time(NULL));
 				int time = 0;
+				int score = 0;
 				int acceleration = 0;
 				int frame_Character = 0;
 				int frame_Enemy = 0;
@@ -137,7 +142,7 @@ int main(int argc, char* argv[])
 				{
 					if (Game_State)
 					{
-						UpdateGameTime(time, acceleration);
+						UpdateGameTimeAndScore(time, acceleration, score);
 
 						while (SDL_PollEvent(&e) != 0)
 						{
@@ -193,6 +198,8 @@ int main(int argc, char* argv[])
 
 						SDL_Rect* currentClip_Pause = &gPauseButton[PauseButton.currentSprite];
 						PauseButton.Render(currentClip_Pause, gRenderer, gPauseButtonTexture);
+					
+						DrawPlayerScore(gTextTexture, gScoreTexture, textColor, gRenderer, gFont, score);
 
 						SDL_RenderPresent(gRenderer);
 
@@ -257,6 +264,12 @@ bool Init()
 					printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 					success = false;
 				}
+
+				if (TTF_Init() == -1)
+				{
+					printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+					success = false;
+				}
 			}
 		}
 	}
@@ -276,171 +289,186 @@ bool LoadMedia()
 	}
 	else
 	{
-		if (!gMenuTexture.LoadFromFile("imgs/background/menu.png", gRenderer))
+		gFont = TTF_OpenFont("font/pixel_font.ttf", 28);
+		if (gFont == NULL)
 		{
-			std::cout << "Failed to load menu image" << std::endl;
-			success = false;
-		}
-
-		if (!gInstructionTexture.LoadFromFile("imgs/background/instruction.png", gRenderer))
-		{
-			std::cout << "Failed to load instruction image" << std::endl;
-			success = false;
-		}
-
-		if (!gPlayButtonTexture.LoadFromFile("imgs/button/big_button/play_button.png", gRenderer))
-		{
-			std::cout << "Failed to load play_button image" << std::endl;
+			LogError("Failed to load font", MIX_ERROR);
 			success = false;
 		}
 		else
 		{
-			for (int i = 0; i < BUTTON_TOTAL; ++i)
+			if (!gTextTexture.LoadFromRenderedText("Your score: ", gFont, textColor, gRenderer))
 			{
-				gPlayButton[i].x = 150*i;
-				gPlayButton[i].y = 0;
-				gPlayButton[i].w = 150;
-				gPlayButton[i].h = 98;
-			}
-		}
-
-		if (!gHelpButtonTexture.LoadFromFile("imgs/button/big_button/help_button.png", gRenderer))
-		{
-			std::cout << "Failed to load help_button image" << std::endl;
-			success = false;
-		}
-		else
-		{
-			for (int i = 0; i < BUTTON_TOTAL; ++i)
-			{
-				gHelpButton[i].x = 150 * i;
-				gHelpButton[i].y = 0;
-				gHelpButton[i].w = 150;
-				gHelpButton[i].h = 98;
-			}
-		}
-
-		if (!gBackButtonTexture.LoadFromFile("imgs/button/big_button/back_button.png", gRenderer))
-		{
-			std::cout << "Failed to load back_button image" << std::endl;
-			success = false;
-		}
-		else
-		{
-			for (int i = 0; i < BUTTON_TOTAL; ++i)
-			{
-				gBackButton[i].x = 100 * i;
-				gBackButton[i].y = 0;
-				gBackButton[i].w = 100;
-				gBackButton[i].h = 78;
-			}
-		}
-
-		if (!gExitButtonTexture.LoadFromFile("imgs/button/big_button/exit_button.png", gRenderer))
-		{
-			std::cout << "Failed to load exit_button image" << std::endl;
-			success = false;
-		}
-		else
-		{
-			for (int i = 0; i < BUTTON_TOTAL; ++i)
-			{
-				gExitButton[i].x = 150 * i;
-				gExitButton[i].y = 0;
-				gExitButton[i].w = 150;
-				gExitButton[i].h = 98;
-			}
-		}
-
-		if (!gPauseButtonTexture.LoadFromFile("imgs/button/big_button/pause_button.png", gRenderer))
-		{
-			std::cout << "Failed to load pause_button image " << std::endl;
-			success = false;
-		}
-		else
-		{
-			for (int i = 0; i < BUTTON_TOTAL; ++i)
-			{
-				gPauseButton[i].x = 30 * i;
-				gPauseButton[i].y = 0;
-				gPauseButton[i].w = 30;
-				gPauseButton[i].h = 23;
-			}
-		}
-
-		if (!gContinueButtonTexture.LoadFromFile("imgs/button/big_button/continue_button.png", gRenderer))
-		{
-			std::cout << "Failed to load continue_button image " << std::endl;
-			success = false;
-		}
-		else
-		{
-			for (int i = 0; i < BUTTON_TOTAL; ++i)
-			{
-				gContinueButton[i].x = 30 * i;
-				gContinueButton[i].y = 0;
-				gContinueButton[i].w = 30;
-				gContinueButton[i].h = 23;
-			}
-		}
-
-		for (int i = 0; i < BACKGROUND_LAYER; ++i)
-		{
-			if (!gBackgroundTexture[i].LoadFromFile(LAYER[i].c_str(), gRenderer))
-			{
-				std::cout << "Failed to load background image" << std::endl;
+				std::cout << "Failed to render text texture" << std::endl;
 				success = false;
 			}
-		}
+			
+			if (!gMenuTexture.LoadFromFile("imgs/background/menu.png", gRenderer))
+			{
+				std::cout << "Failed to load menu image" << std::endl;
+				success = false;
+			}
 
-		if (!gGroundTexture.LoadFromFile("imgs/background/ground.png", gRenderer))
-		{
-			std::cout << "Failed to load ground image" << std::endl;
-			success = false;
-		}
+			if (!gInstructionTexture.LoadFromFile("imgs/background/instruction.png", gRenderer))
+			{
+				std::cout << "Failed to load instruction image" << std::endl;
+				success = false;
+			}
 
-		if (!gCharacterTexture.LoadFromFile("imgs/character/char_run.png", gRenderer))
-		{
-			std::cout << "Failed to load character_run image." << std::endl;
-			success = false;
-		}
-		else
-		{
-			gCharacterClips[0].x = 57*0;
-			gCharacterClips[0].y = 0;
-			gCharacterClips[0].w = 57;
-			gCharacterClips[0].h = 57;
+			if (!gPlayButtonTexture.LoadFromFile("imgs/button/big_button/play_button.png", gRenderer))
+			{
+				std::cout << "Failed to load play_button image" << std::endl;
+				success = false;
+			}
+			else
+			{
+				for (int i = 0; i < BUTTON_TOTAL; ++i)
+				{
+					gPlayButton[i].x = 150 * i;
+					gPlayButton[i].y = 0;
+					gPlayButton[i].w = 150;
+					gPlayButton[i].h = 98;
+				}
+			}
 
-			gCharacterClips[1].x = 57*1;
-			gCharacterClips[1].y = 0;
-			gCharacterClips[1].w = 57;
-			gCharacterClips[1].h = 57;
+			if (!gHelpButtonTexture.LoadFromFile("imgs/button/big_button/help_button.png", gRenderer))
+			{
+				std::cout << "Failed to load help_button image" << std::endl;
+				success = false;
+			}
+			else
+			{
+				for (int i = 0; i < BUTTON_TOTAL; ++i)
+				{
+					gHelpButton[i].x = 150 * i;
+					gHelpButton[i].y = 0;
+					gHelpButton[i].w = 150;
+					gHelpButton[i].h = 98;
+				}
+			}
 
-			gCharacterClips[2].x = 57*2;
-			gCharacterClips[2].y = 0;
-			gCharacterClips[2].w = 57;
-			gCharacterClips[2].h = 57;
+			if (!gBackButtonTexture.LoadFromFile("imgs/button/big_button/back_button.png", gRenderer))
+			{
+				std::cout << "Failed to load back_button image" << std::endl;
+				success = false;
+			}
+			else
+			{
+				for (int i = 0; i < BUTTON_TOTAL; ++i)
+				{
+					gBackButton[i].x = 100 * i;
+					gBackButton[i].y = 0;
+					gBackButton[i].w = 100;
+					gBackButton[i].h = 78;
+				}
+			}
 
-			gCharacterClips[3].x = 57*3;
-			gCharacterClips[3].y = 0;
-			gCharacterClips[3].w = 57;
-			gCharacterClips[3].h = 57;
+			if (!gExitButtonTexture.LoadFromFile("imgs/button/big_button/exit_button.png", gRenderer))
+			{
+				std::cout << "Failed to load exit_button image" << std::endl;
+				success = false;
+			}
+			else
+			{
+				for (int i = 0; i < BUTTON_TOTAL; ++i)
+				{
+					gExitButton[i].x = 150 * i;
+					gExitButton[i].y = 0;
+					gExitButton[i].w = 150;
+					gExitButton[i].h = 98;
+				}
+			}
 
-			gCharacterClips[4].x = 57*4;
-			gCharacterClips[4].y = 0;
-			gCharacterClips[4].w = 57;
-			gCharacterClips[4].h = 57;
+			if (!gPauseButtonTexture.LoadFromFile("imgs/button/big_button/pause_button.png", gRenderer))
+			{
+				std::cout << "Failed to load pause_button image " << std::endl;
+				success = false;
+			}
+			else
+			{
+				for (int i = 0; i < BUTTON_TOTAL; ++i)
+				{
+					gPauseButton[i].x = 22 * i;
+					gPauseButton[i].y = 0;
+					gPauseButton[i].w = 22;
+					gPauseButton[i].h = 34;
+				}
+			}
 
-			gCharacterClips[5].x = 57*5;
-			gCharacterClips[5].y = 0;
-			gCharacterClips[5].w = 57;
-			gCharacterClips[5].h = 57;
-		}
+			if (!gContinueButtonTexture.LoadFromFile("imgs/button/big_button/continue_button.png", gRenderer))
+			{
+				std::cout << "Failed to load continue_button image " << std::endl;
+				success = false;
+			}
+			else
+			{
+				for (int i = 0; i < BUTTON_TOTAL; ++i)
+				{
+					gContinueButton[i].x = 22 * i;
+					gContinueButton[i].y = 0;
+					gContinueButton[i].w = 22;
+					gContinueButton[i].h = 34;
+				}
+			}
 
-		if (!gLoseTexture.LoadFromFile("imgs/background/lose.png", gRenderer))
-		{
-			std::cout << "Failed to load lose image." << std::endl;
-			success = false;
+			for (int i = 0; i < BACKGROUND_LAYER; ++i)
+			{
+				if (!gBackgroundTexture[i].LoadFromFile(LAYER[i].c_str(), gRenderer))
+				{
+					std::cout << "Failed to load background image" << std::endl;
+					success = false;
+				}
+			}
+
+			if (!gGroundTexture.LoadFromFile("imgs/background/ground.png", gRenderer))
+			{
+				std::cout << "Failed to load ground image" << std::endl;
+				success = false;
+			}
+
+			if (!gCharacterTexture.LoadFromFile("imgs/character/char_run.png", gRenderer))
+			{
+				std::cout << "Failed to load character_run image." << std::endl;
+				success = false;
+			}
+			else
+			{
+				gCharacterClips[0].x = 57 * 0;
+				gCharacterClips[0].y = 0;
+				gCharacterClips[0].w = 57;
+				gCharacterClips[0].h = 57;
+
+				gCharacterClips[1].x = 57 * 1;
+				gCharacterClips[1].y = 0;
+				gCharacterClips[1].w = 57;
+				gCharacterClips[1].h = 57;
+
+				gCharacterClips[2].x = 57 * 2;
+				gCharacterClips[2].y = 0;
+				gCharacterClips[2].w = 57;
+				gCharacterClips[2].h = 57;
+
+				gCharacterClips[3].x = 57 * 3;
+				gCharacterClips[3].y = 0;
+				gCharacterClips[3].w = 57;
+				gCharacterClips[3].h = 57;
+
+				gCharacterClips[4].x = 57 * 4;
+				gCharacterClips[4].y = 0;
+				gCharacterClips[4].w = 57;
+				gCharacterClips[4].h = 57;
+
+				gCharacterClips[5].x = 57 * 5;
+				gCharacterClips[5].y = 0;
+				gCharacterClips[5].w = 57;
+				gCharacterClips[5].h = 57;
+			}
+
+			if (!gLoseTexture.LoadFromFile("imgs/background/lose.png", gRenderer))
+			{
+				std::cout << "Failed to load lose image." << std::endl;
+				success = false;
+			}
 		}
 	}
 	return success;

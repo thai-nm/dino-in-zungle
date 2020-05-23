@@ -45,8 +45,8 @@ const std::string WINDOW_TITLE = "Dino in jungle";
 
 const int COMMON_BUTTON_WIDTH = 150;
 const int COMMON_BUTTON_HEIGHT = 98;
-const int SMALL_BUTTON_WIDTH = 23;
-const int SMALL_BUTTON_HEIGHT = 30;
+const int SMALL_BUTTON_WIDTH = 22;
+const int SMALL_BUTTON_HEIGHT = 34;
 const int RUNNING_FRAMES = 6;
 const int FLYING_FRAMES = 5;
 const int BACKGROUND_LAYER = 9;

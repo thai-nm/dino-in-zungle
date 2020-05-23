@@ -155,10 +155,7 @@ void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture
 				switch (e->type)
 				{
 				case SDL_MOUSEMOTION:
-					std::cout << "inside" << std::endl;
 					ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
-
-
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 				{
@@ -173,9 +170,10 @@ void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture
 			{
 				ContinueButton.currentSprite = BUTTON_MOUSE_OUT;
 			}
-
+		
 			SDL_Rect* currentClip_Continue = &gContinueButton[ContinueButton.currentSprite];
 			ContinueButton.Render(currentClip_Continue, gRenderer, gContinueButtonTexture);
+
 			SDL_RenderPresent(gRenderer);
 		} while (SDL_WaitEvent(e) != 0 && e->type == SDL_MOUSEBUTTONDOWN || e->type == SDL_MOUSEMOTION);
 	}
@@ -238,7 +236,7 @@ void GenerateEnemy(Enemy& enemy1, Enemy& enemy2, Enemy& enemy3, SDL_Rect(&gEnemy
 	}
 }
 
-int UpdateGameTime(int& time, int& speed)
+int UpdateGameTimeAndScore(int& time, int& speed, int& score)
 {	
 	if (time == TIME_MAX)
 	{
@@ -248,6 +246,10 @@ int UpdateGameTime(int& time, int& speed)
 	if (time > TIME_MAX )
 	{
 		time = 0;
+	}
+	if (time % 5 == 0)
+	{
+		score += 1;
 	}
 	return ++time;
 }
@@ -387,35 +389,47 @@ void ControlEnemyFrame(int &frame)
 	}
 }
 
+void DrawPlayerScore(LTexture gTextTexture, LTexture gScoreTexture, SDL_Color textColor, SDL_Renderer *gRenderer, TTF_Font *gFont, const int& score)
+{
+	gTextTexture.Render(670, 20, gRenderer);
+	if (gScoreTexture.LoadFromRenderedText(std::to_string(score), gFont, textColor, gRenderer))
+	{
+		gScoreTexture.Render(830, 20, gRenderer);
+	}
+}
+
 void DrawEndGameSelection(LTexture gLoseTexture, SDL_Event *e, SDL_Renderer *gRenderer, bool &Play_Again)
 {
-	bool End_Game = false;
-	while (!End_Game)
+	if (Play_Again)
 	{
-		while (SDL_PollEvent(e) != 0)
+		bool End_Game = false;
+		while (!End_Game)
 		{
-			if (e->type == SDL_QUIT)
+			while (SDL_PollEvent(e) != 0)
 			{
-				Play_Again = false;
-			}
-
-			if (e->type == SDL_KEYDOWN)
-			{
-				switch (e->key.keysym.sym)
+				if (e->type == SDL_QUIT)
 				{
-				case SDLK_SPACE:
-					End_Game = true;
-					break;
-				case SDLK_ESCAPE:
-					End_Game = true;
 					Play_Again = false;
-					break;
+				}
+
+				if (e->type == SDL_KEYDOWN)
+				{
+					switch (e->key.keysym.sym)
+					{
+					case SDLK_SPACE:
+						End_Game = true;
+						break;
+					case SDLK_ESCAPE:
+						End_Game = true;
+						Play_Again = false;
+						break;
+					}
 				}
 			}
+
+			gLoseTexture.Render(0, 0, gRenderer);
+
+			SDL_RenderPresent(gRenderer);
 		}
-
-		gLoseTexture.Render(0, 0, gRenderer);
-
-		SDL_RenderPresent(gRenderer);
 	}
 }
