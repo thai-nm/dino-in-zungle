@@ -24,7 +24,7 @@ bool Character::OnGround()
 	return posY == GROUND;
 }
 
-void Character::HandleEvent(SDL_Event& e)
+void Character::HandleEvent(SDL_Event& e, Mix_Chunk *gJump)
 {
 	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
 	{
@@ -34,6 +34,7 @@ void Character::HandleEvent(SDL_Event& e)
 			{
 				if (OnGround())
 				{
+					Mix_PlayChannel(-1, gJump, 0);
 					status = JUMP;
 				}
 			}

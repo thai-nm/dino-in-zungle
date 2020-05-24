@@ -20,8 +20,13 @@ const std::string LAYER[BACKGROUND_LAYER] = {
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 SDL_Color textColor = { 0, 0, 0 };
-Mix_Music* gMusic = nullptr;
 TTF_Font* gFont = nullptr;
+Mix_Music* gMusic = nullptr;
+Mix_Music* gMenuMusic = nullptr;
+Mix_Chunk* gClick = nullptr;
+Mix_Chunk* gJump = nullptr;
+Mix_Chunk* gLose = nullptr;
+Mix_Chunk* gMouseOver = nullptr;
 
 SDL_Rect gPlayButton[BUTTON_TOTAL];
 SDL_Rect gHelpButton[BUTTON_TOTAL];
@@ -78,6 +83,7 @@ int main(int argc, char* argv[])
 			bool Quit_Menu = false;
 			bool Play_Again = false;
 
+			Mix_PlayMusic(gMenuMusic, IS_REPEATITIVE);
 			while (!Quit_Menu)
 			{
 				SDL_Event e_mouse;
@@ -89,11 +95,11 @@ int main(int argc, char* argv[])
 					}
 
 					bool Quit_Game = false;
-					HandlePlayButton(&e_mouse, PlayButton, Quit_Menu, Play_Again);
+					HandlePlayButton(&e_mouse, PlayButton, Quit_Menu, Play_Again, gClick);
 						
-					HandleHelpButton(&e_mouse, gBackButton, HelpButton, BackButton, gInstructionTexture, gBackButtonTexture, gRenderer, Quit_Game);
+					HandleHelpButton(&e_mouse, gBackButton, HelpButton, BackButton, gInstructionTexture, gBackButtonTexture, gRenderer, Quit_Game, gClick);
 
-					HandleExitButton(&e_mouse, ExitButton, Quit_Menu);
+					HandleExitButton(&e_mouse, ExitButton, Quit_Menu, gClick);
 
 					if (Quit_Game == true)
 					{
@@ -134,7 +140,7 @@ int main(int argc, char* argv[])
 				std::vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, BASE_OFFSET_SPEED);
 
 				SDL_Event e;
-				//Mix_PlayMusic(gMusic, IS_REPEATITIVE);
+				Mix_PlayMusic(gMusic, IS_REPEATITIVE);
 
 				bool Quit = false;
 				bool Game_State = true;
@@ -152,15 +158,15 @@ int main(int argc, char* argv[])
 								Play_Again = false;
 							}
 
-							HandlePauseButton(&e, gRenderer, gContinueButton, PauseButton, ContinueButton, gContinueButtonTexture, Game_State);
+							HandlePauseButton(&e, gRenderer, gContinueButton, PauseButton, ContinueButton, gContinueButtonTexture, Game_State, gClick);
 
-							character.HandleEvent(e);
+							character.HandleEvent(e, gJump);
 						}
 						SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 						SDL_RenderClear(gRenderer);
 
-						renderScrollingBackground(OffsetSpeed_Bkgr, gBackgroundTexture, gRenderer);
-						renderScrollingGround(OffsetSpeed_Ground, acceleration, gGroundTexture, gRenderer);
+						RenderScrollingBackground(OffsetSpeed_Bkgr, gBackgroundTexture, gRenderer);
+						RenderScrollingGround(OffsetSpeed_Ground, acceleration, gGroundTexture, gRenderer);
 
 						character.Move();
 						SDL_Rect* currentClip_Character = nullptr;
@@ -175,16 +181,12 @@ int main(int argc, char* argv[])
 							character.Render(currentClip_Character, gRenderer, gCharacterTexture);
 						}
 
-						if (AppearanceTime_1(time, enemy1.GetSpeed(acceleration)))
-						{
-							enemy1.Move(acceleration);
-							enemy1.Render(gRenderer);
-						}
-						if (AppearanceTime_2(time, enemy1.GetSpeed(acceleration)))
-						{
-							enemy2.Move(acceleration);
-							enemy2.Render(gRenderer);
-						}
+
+						enemy1.Move(acceleration);
+						enemy1.Render(gRenderer);
+			
+						enemy2.Move(acceleration);
+						enemy2.Render(gRenderer);
 
 						SDL_Rect* currentClip_Enemy = &gEnemyClips[frame_Enemy / 4];
 						enemy3.Move(acceleration);
@@ -193,6 +195,11 @@ int main(int argc, char* argv[])
 
 						if(CheckEnemyColission(character, currentClip_Character, enemy1, enemy2, enemy3, currentClip_Enemy))
 						{
+							if (Mix_PlayingMusic())
+							{
+								Mix_PauseMusic();
+								Mix_PlayChannel(-1, gLose, 0);
+							}
 							Quit = true;
 						}
 
@@ -281,12 +288,48 @@ bool LoadMedia()
 {
 	bool success = true;
 
-	gMusic = Mix_LoadMUS("sound/bkgr_audio.wav");
+	gMusic = Mix_LoadMUS("sound/bkgr_audio1.wav");
 	if (gMusic == nullptr)
 	{
 		LogError("Failed to load background music", MIX_ERROR);
 		success = false;
 	}
+
+	gMenuMusic = Mix_LoadMUS("sound/menu_audio.wav");
+	if (gMenuMusic == nullptr)
+	{
+		LogError("Failed to load menu music", MIX_ERROR);
+		success = false;
+	}
+
+	gClick = Mix_LoadWAV("sound/mouse_click1.wav");
+	if (gClick == nullptr)
+	{
+		LogError("Failed to load mouse click sound", MIX_ERROR);
+		success = false;
+	}
+
+	gJump = Mix_LoadWAV("sound/jump_sound.wav");
+	if (gJump == nullptr)
+	{
+		LogError("Failed to load jumping sound", MIX_ERROR);
+		success = false;
+	}
+
+	gLose = Mix_LoadWAV("sound/lose_sound.wav");
+	if (gLose == nullptr)
+	{
+		LogError("Failed to load lose sound", MIX_ERROR);
+		success = false;
+	}
+
+	gMouseOver = Mix_LoadWAV("sound/mouse_over.wav");
+	if (gMouseOver == nullptr)
+	{
+		LogError("Failed to load mouse over sound", MIX_ERROR);
+		success = false;
+	}
+
 	else
 	{
 		gFont = TTF_OpenFont("font/pixel_font.ttf", 28);
@@ -426,7 +469,7 @@ bool LoadMedia()
 				success = false;
 			}
 
-			if (!gCharacterTexture.LoadFromFile("imgs/character/char_run.png", gRenderer))
+			if (!gCharacterTexture.LoadFromFile("imgs/character/char.png", gRenderer))
 			{
 				std::cout << "Failed to load character_run image." << std::endl;
 				success = false;

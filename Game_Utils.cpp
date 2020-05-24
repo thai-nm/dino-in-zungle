@@ -1,6 +1,6 @@
 #include "Game_Utils.h"
 
-void renderScrollingBackground(std::vector <double>& offsetSpeed, LTexture (&gBackgroundTexture)[BACKGROUND_LAYER], SDL_Renderer *gRenderer)
+void RenderScrollingBackground(std::vector <double>& offsetSpeed, LTexture (&gBackgroundTexture)[BACKGROUND_LAYER], SDL_Renderer *gRenderer)
 {
 	std::vector <double> layer_speed;
 	layer_speed.push_back(0.0);
@@ -25,7 +25,7 @@ void renderScrollingBackground(std::vector <double>& offsetSpeed, LTexture (&gBa
 	}
 }
 
-void renderScrollingGround(int& speed, const int acceleration, LTexture gGroundTexture, SDL_Renderer *gRenderer)
+void RenderScrollingGround(int& speed, const int acceleration, LTexture gGroundTexture, SDL_Renderer *gRenderer)
 {
 	speed -= GROUND_SPEED + acceleration;
 	if (speed < -gGroundTexture.GetWidth())
@@ -36,7 +36,7 @@ void renderScrollingGround(int& speed, const int acceleration, LTexture gGroundT
 	gGroundTexture.Render(speed + gGroundTexture.GetWidth(), 0, gRenderer);
 }
 
-void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Play)
+void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Play, Mix_Chunk *gClick)
 {
 	if (e->type == SDL_QUIT)
 	{
@@ -53,6 +53,7 @@ void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Pl
 		case SDL_MOUSEBUTTONDOWN:
 			Play = true;
 			QuitMenu = true;
+			Mix_PlayChannel(-1, gClick, 0);
 			PlayButton.currentSprite = BUTTON_MOUSE_OVER;
 			break;
 		}
@@ -63,7 +64,7 @@ void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Pl
 	}
 }
 
-void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton, LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer *gRenderer, bool &Quit_game)
+void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton, LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer *gRenderer, bool &Quit_game, Mix_Chunk *gClick)
 {
 	if (HelpButton.IsInside(e, COMMON_BUTTON))
 	{
@@ -74,6 +75,7 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			HelpButton.currentSprite = BUTTON_MOUSE_OVER;
+			Mix_PlayChannel(-1, gClick, 0);
 
 			bool ReadDone = false;
 			while (!ReadDone)
@@ -96,6 +98,7 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 							break;
 						case SDL_MOUSEBUTTONDOWN:
 							BackButton.currentSprite = BUTTON_MOUSE_OVER;
+							Mix_PlayChannel(-1, gClick, 0);
 							ReadDone = true;
 							break;
 						}
@@ -122,7 +125,7 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 	}
 }
 
-void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit)
+void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit, Mix_Chunk* gClick)
 {
 	if (ExitButton.IsInside(e, COMMON_BUTTON))
 	{
@@ -134,6 +137,7 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit)
 		case SDL_MOUSEBUTTONDOWN:
 			Quit = true;
 			ExitButton.currentSprite = BUTTON_MOUSE_OVER;
+			Mix_PlayChannel(-1, gClick, 0);
 			break;
 		}
 	}
@@ -143,7 +147,7 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit)
 	}
 }
 
-void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture, SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], bool& Game_State)
+void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture, SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], bool& Game_State, Mix_Chunk* gClick)
 {
 	bool Back_To_Game = false;
 	while (!Back_To_Game)
@@ -160,6 +164,8 @@ void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture
 				case SDL_MOUSEBUTTONDOWN:
 				{
 					ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
+					Mix_PlayChannel(-1, gClick, 0);
+					Mix_ResumeMusic();
 					Game_State = true;
 					Back_To_Game = true;
 				}
@@ -179,7 +185,7 @@ void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture
 	}
 }
 
-void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &Game_State)
+void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &Game_State, Mix_Chunk *gClick)
 {
 	if (PauseButton.IsInside(e, SMALL_BUTTON))
 	{
@@ -190,10 +196,12 @@ void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContin
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			PauseButton.currentSprite = BUTTON_MOUSE_OVER;
+			Mix_PlayChannel(-1, gClick, 0);
+			Mix_PauseMusic();
 			break;
 		case SDL_MOUSEBUTTONUP:
 			Game_State = false;
-			HandleContinueButton(ContinueButton, gContinueButtonTexture, e, gRenderer, gContinueButton, Game_State);
+			HandleContinueButton(ContinueButton, gContinueButtonTexture, e, gRenderer, gContinueButton, Game_State, gClick);
 			break;
 		}
 	}
@@ -254,56 +262,6 @@ int UpdateGameTimeAndScore(int& time, int& speed, int& score)
 	return ++time;
 }
 
-bool AppearanceTime_1(const int &time, const int &enemy_speed)
-{
-	bool permission = false;
-	int moving_time = (SCREEN_WIDTH + MAX_ENEMY_WIDTH) / enemy_speed;
-
-	if (time >= 0 && time <= 0 + moving_time)
-	{
-		permission = true;
-	}
-	else if (time >= 220 && time <= 220 + moving_time)
-	{
-		permission = true;
-	}
-	else if (time >= 430 && time <= 430 + moving_time)
-	{
-		permission = true;
-	}
-	else if (time >= 650 && time <= 650 + moving_time)
-	{
-		permission = true;
-	}
-
-	return permission;
-}
-
-bool AppearanceTime_2(const int& time, const int& enemy_speed)
-{
-	bool permission = false;
-	int moving_time = (SCREEN_WIDTH + MAX_ENEMY_WIDTH) / enemy_speed;
-
-	if (time >= 70 && time <= 70 + moving_time)
-	{
-		permission = true;
-	}
-	else if (time >= 300 && time <= 300 + moving_time)
-	{
-		permission = true;
-	}
-	else if (time >= 550 && time <= 550 + moving_time)
-	{
-		permission = true;
-	}
-	else if (time >= 780 && time <= 780 + moving_time)
-	{
-		permission = true;
-	}
-
-	return permission;
-}
-
 bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_Rect* enemy_clip)
 {
 	bool collide = false;
@@ -315,15 +273,15 @@ bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_R
 
 	if (enemy.GetType() == ON_GROUND_ENEMY)
 	{
-		static const int TRASH_PIXEL_1 = 15;
-		static const int TRASH_PIXEL_2 = 30;
+		const int TRASH_PIXEL_1 = 25;
+		const int TRASH_PIXEL_2 = 30;
 
 		int left_b = enemy.GetPosX();
 		int right_b = enemy.GetPosX() + enemy.GetWidth();
 		int top_b = enemy.GetPosY();
 		int bottom_b = enemy.GetPosY() + enemy.GetHeight();
 
-		if (right_a - TRASH_PIXEL_1 >= left_b && left_a <= right_b)
+		if (right_a - TRASH_PIXEL_1 >= left_b && left_a + TRASH_PIXEL_1 <= right_b)
 		{
 			if (bottom_a - TRASH_PIXEL_2 >= top_b)
 			{
@@ -333,18 +291,22 @@ bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_R
 	}
 	else
 	{
-		static const int TRASH_PIXEL_1 = 30;
-		static const int TRASH_PIXEL_2 = 20;
-		static const int TRASH_PIXEL_3 = 40;
+		const int TRASH_PIXEL_1 = 22;
+		const int TRASH_PIXEL_2 = 18;
 
 		int left_b = enemy.GetPosX() + TRASH_PIXEL_1;
-		int right_b = enemy.GetPosX() + enemy_clip->w - TRASH_PIXEL_2;
+		int right_b = enemy.GetPosX() + enemy_clip->w - TRASH_PIXEL_1;
 		int top_b = enemy.GetPosY();
-		int bottom_b = enemy.GetPosY() + enemy_clip->h - TRASH_PIXEL_3;
+		int bottom_b = enemy.GetPosY() + enemy_clip->h - TRASH_PIXEL_2;
 
 		if (right_a >= left_b && left_a <= right_b)
 		{
-			if (top_a <= bottom_b)
+			if (top_a <= bottom_b && top_a >= top_b)
+			{
+				collide = true;
+			}
+			
+			if (bottom_a >= bottom_b && bottom_a <= top_b)
 			{
 				collide = true;
 			}
@@ -360,11 +322,11 @@ bool CheckEnemyColission(Character character, SDL_Rect* char_clip, Enemy enemy1,
 	{
 		return true;
 	}
-	else if (CheckColission(character, char_clip, enemy2))
+	if (CheckColission(character, char_clip, enemy2))
 	{
 		return true;
 	}
-	else if (CheckColission(character, char_clip, enemy3, enemy_clip))
+	if (CheckColission(character, char_clip, enemy3, enemy_clip))
 	{
 		return true;
 	}

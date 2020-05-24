@@ -16,7 +16,7 @@ public:
 
 	bool OnGround();
 
-	void HandleEvent(SDL_Event& e);
+	void HandleEvent(SDL_Event& e, Mix_Chunk *gJump);
 
 	void Move();
 
