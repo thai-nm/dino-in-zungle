@@ -106,4 +106,3 @@ void DrawEndGameSelection(LTexture gLoseTexture,
     bool& Play_Again);
 
 #endif // !GAME_UTILS_H_
-

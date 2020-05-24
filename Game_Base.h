@@ -102,4 +102,3 @@ enum ButtonSprite
 void LogError(std::string msg, int error_code = SDL_ERROR);
 
 #endif // !GAME_LIB_
-

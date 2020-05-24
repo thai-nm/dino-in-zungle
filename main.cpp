@@ -222,6 +222,12 @@ int main(int argc, char* argv[])
 				}
 
 				DrawEndGameSelection(gLoseTexture, &e, gRenderer, Play_Again);
+				if (!Play_Again)
+				{
+					enemy1.~Enemy();
+					enemy2.~Enemy();
+					enemy3.~Enemy();
+				}
 			}
 		}
 	}
