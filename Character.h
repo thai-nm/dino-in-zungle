@@ -10,9 +10,10 @@
 class Character
 {
 public:
-	Character();
+	static const int JUMP_SPEED = 8;
+	static const int FALL_SPEED = 8;
 
-	~Character();
+	Character();
 
 	bool OnGround();
 
@@ -30,9 +31,6 @@ private:
 	int posX, posY;
 
 	int status;
-
-	int JUMP_SPEED;
-	int FALL_SPEED;
 };
 
 #endif // !CHARACTER_H_

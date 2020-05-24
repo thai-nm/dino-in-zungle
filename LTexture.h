@@ -29,5 +29,4 @@ private:
 	int mHeight;
 };
 
-
 #endif // !LTEXTURE_H_

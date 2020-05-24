@@ -21,8 +21,6 @@ public:
 
 private:
 	SDL_Point position;
-
 };
 
 #endif // !BUTTON_H_
-

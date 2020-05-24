@@ -26,7 +26,6 @@ Mix_Music* gMenuMusic = nullptr;
 Mix_Chunk* gClick = nullptr;
 Mix_Chunk* gJump = nullptr;
 Mix_Chunk* gLose = nullptr;
-Mix_Chunk* gMouseOver = nullptr;
 
 SDL_Rect gPlayButton[BUTTON_TOTAL];
 SDL_Rect gHelpButton[BUTTON_TOTAL];
@@ -49,20 +48,18 @@ LTexture gExitButtonTexture;
 LTexture gBackButtonTexture;
 LTexture gPauseButtonTexture;
 LTexture gContinueButtonTexture;
-LTexture gPlayAgainButtonTexture;
 LTexture gLoseTexture;
-LTexture gTextTexture;
+LTexture gText1Texture;
 LTexture gScoreTexture;
+LTexture gText2Texture;
+LTexture gHighScoreTexture;
 
-
-Button PlayButton(389, 186);
-Button HelpButton(389, 293);
-Button ExitButton(389, 402);
-Button BackButton(31, 29);
-Button PauseButton(31, 29);
-Button ContinueButton(31, 29);
-Button PlayAgainButton(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-
+Button PlayButton(PLAY_BUTON_POSX, PLAY_BUTTON_POSY);
+Button HelpButton(HELP_BUTTON_POSX, HELP_BUTTON_POSY);
+Button ExitButton(EXIT_BUTTON_POSX, EXIT_BUTTON_POSY);
+Button BackButton(BACK_BUTTON_POSX, BACK_BUTTON_POSY);
+Button PauseButton(PAUSE_BUTTON_POSX, PAUSE_BUTTON_POSY);
+Button ContinueButton(CONTINUE_BUTTON_POSX, CONTINUE_BUTTON_POSY);
 
 Character character;
 
@@ -97,7 +94,10 @@ int main(int argc, char* argv[])
 					bool Quit_Game = false;
 					HandlePlayButton(&e_mouse, PlayButton, Quit_Menu, Play_Again, gClick);
 						
-					HandleHelpButton(&e_mouse, gBackButton, HelpButton, BackButton, gInstructionTexture, gBackButtonTexture, gRenderer, Quit_Game, gClick);
+					HandleHelpButton(&e_mouse, gBackButton,
+									 HelpButton, BackButton, 
+									 gInstructionTexture, gBackButtonTexture,
+									 gRenderer, Quit_Game, gClick);
 
 					HandleExitButton(&e_mouse, ExitButton, Quit_Menu, gClick);
 
@@ -129,18 +129,18 @@ int main(int argc, char* argv[])
 				int acceleration = 0;
 				int frame_Character = 0;
 				int frame_Enemy = 0;
-
+				std::string highscore = GetHighScoreFromFile("high_score.txt");
+				
+				SDL_Event e;
 				Enemy enemy1(ON_GROUND_ENEMY);
 				Enemy enemy2(ON_GROUND_ENEMY);
 				Enemy enemy3(IN_AIR_ENEMY);
-
+				
+				Mix_PlayMusic(gMusic, IS_REPEATITIVE);
 				GenerateEnemy(enemy1, enemy2, enemy3, gEnemyClips, gRenderer);
 
 				int OffsetSpeed_Ground = BASE_OFFSET_SPEED;
-				std::vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, BASE_OFFSET_SPEED);
-
-				SDL_Event e;
-				Mix_PlayMusic(gMusic, IS_REPEATITIVE);
+				std::vector <double> OffsetSpeed_Bkgr(BACKGROUND_LAYER, BASE_OFFSET_SPEED);				
 
 				bool Quit = false;
 				bool Game_State = true;
@@ -158,7 +158,9 @@ int main(int argc, char* argv[])
 								Play_Again = false;
 							}
 
-							HandlePauseButton(&e, gRenderer, gContinueButton, PauseButton, ContinueButton, gContinueButtonTexture, Game_State, gClick);
+							HandlePauseButton(&e, gRenderer, gContinueButton,
+								PauseButton, ContinueButton,
+								gContinueButtonTexture, Game_State, gClick);
 
 							character.HandleEvent(e, gJump);
 						}
@@ -167,6 +169,7 @@ int main(int argc, char* argv[])
 
 						RenderScrollingBackground(OffsetSpeed_Bkgr, gBackgroundTexture, gRenderer);
 						RenderScrollingGround(OffsetSpeed_Ground, acceleration, gGroundTexture, gRenderer);
+
 
 						character.Move();
 						SDL_Rect* currentClip_Character = nullptr;
@@ -188,25 +191,28 @@ int main(int argc, char* argv[])
 						enemy2.Move(acceleration);
 						enemy2.Render(gRenderer);
 
-						SDL_Rect* currentClip_Enemy = &gEnemyClips[frame_Enemy / 4];
+						SDL_Rect* currentClip_Enemy = &gEnemyClips[frame_Enemy / SLOW_FRAME_ENEMY];
 						enemy3.Move(acceleration);
 						enemy3.Render(gRenderer, currentClip_Enemy);
 
 
-						if(CheckEnemyColission(character, currentClip_Character, enemy1, enemy2, enemy3, currentClip_Enemy))
+						SDL_Rect* currentClip_Pause = &gPauseButton[PauseButton.currentSprite];
+						PauseButton.Render(currentClip_Pause, gRenderer, gPauseButtonTexture);
+
+
+						DrawPlayerScore(gText1Texture, gScoreTexture, textColor, gRenderer, gFont, score);
+						DrawPlayerHighScore(gText2Texture, gHighScoreTexture, textColor, gRenderer, gFont, highscore);
+
+						if (CheckEnemyColission(character,
+							enemy1, enemy2, enemy3,
+							currentClip_Character, currentClip_Enemy))
 						{
-							if (Mix_PlayingMusic())
-							{
-								Mix_PauseMusic();
-								Mix_PlayChannel(-1, gLose, 0);
-							}
+							Mix_PauseMusic();
+							Mix_PlayChannel(MIX_CHANNEL, gLose, NOT_REPEATITIVE);
+							UpdateHighScore("high_score.txt", score, highscore);
 							Quit = true;
 						}
 
-						SDL_Rect* currentClip_Pause = &gPauseButton[PauseButton.currentSprite];
-						PauseButton.Render(currentClip_Pause, gRenderer, gPauseButtonTexture);
-					
-						DrawPlayerScore(gTextTexture, gScoreTexture, textColor, gRenderer, gFont, score);
 
 						SDL_RenderPresent(gRenderer);
 
@@ -241,7 +247,8 @@ bool Init()
 			std::cout << "Warning: Linear texture filtering not enabled!";
 		}
 
-		gWindow = SDL_CreateWindow(WINDOW_TITLE.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow(WINDOW_TITLE.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+								   SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (gWindow == NULL)
 		{
 			LogError("Can not create window", SDL_ERROR);
@@ -323,13 +330,6 @@ bool LoadMedia()
 		success = false;
 	}
 
-	gMouseOver = Mix_LoadWAV("sound/mouse_over.wav");
-	if (gMouseOver == nullptr)
-	{
-		LogError("Failed to load mouse over sound", MIX_ERROR);
-		success = false;
-	}
-
 	else
 	{
 		gFont = TTF_OpenFont("font/pixel_font.ttf", 28);
@@ -340,9 +340,15 @@ bool LoadMedia()
 		}
 		else
 		{
-			if (!gTextTexture.LoadFromRenderedText("Your score: ", gFont, textColor, gRenderer))
+			if (!gText1Texture.LoadFromRenderedText("Your score: ", gFont, textColor, gRenderer))
 			{
-				std::cout << "Failed to render text texture" << std::endl;
+				std::cout << "Failed to render text1 texture" << std::endl;
+				success = false;
+			}
+
+			if (!gText2Texture.LoadFromRenderedText("High score: ", gFont, textColor, gRenderer))
+			{
+				std::cout << "Failed to render text2 texture" << std::endl;
 				success = false;
 			}
 			
@@ -519,13 +525,21 @@ bool LoadMedia()
 
 void Close()
 {
-	gCharacterTexture.Free();
 	gMenuTexture.Free();
+	gInstructionTexture.Free();
 	gCharacterTexture.Free();
 	gGroundTexture.Free();
 	gPlayButtonTexture.Free();
 	gHelpButtonTexture.Free();
 	gExitButtonTexture.Free();
+	gBackButtonTexture.Free();
+	gPauseButtonTexture.Free();
+	gContinueButtonTexture.Free();
+	gLoseTexture.Free();
+	gText1Texture.Free();
+	gScoreTexture.Free();
+	gText2Texture.Free();
+	gHighScoreTexture.Free();
 
 	for (int i = 0; i < BACKGROUND_LAYER; ++i)
 	{
@@ -533,7 +547,15 @@ void Close()
 	}
 
 	Mix_FreeMusic(gMusic);
+	Mix_FreeMusic(gMenuMusic);
+	Mix_FreeChunk(gClick);
+	Mix_FreeChunk(gLose);
+	Mix_FreeChunk(gJump);
 	gMusic = nullptr;
+	gMenuMusic = nullptr;
+	gClick = nullptr;
+	gLose = nullptr;
+	gJump = nullptr;
 
 	SDL_DestroyRenderer(gRenderer);
 	gRenderer = nullptr;

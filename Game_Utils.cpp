@@ -1,17 +1,74 @@
 #include "Game_Utils.h"
 
-void RenderScrollingBackground(std::vector <double>& offsetSpeed, LTexture (&gBackgroundTexture)[BACKGROUND_LAYER], SDL_Renderer *gRenderer)
+std::string GetHighScoreFromFile(std::string path)
+{
+	std::fstream HighScoreFile;
+	std::string highscore;
+
+	HighScoreFile.open(path, std::ios::in);
+	HighScoreFile >> highscore;
+
+	return highscore;
+}
+
+void UpdateHighScore(std::string path,
+	const int& score, 
+	const std::string& old_high_score)
+{
+	int oldHighScore = 0;
+	std::fstream HighScoreFile;
+	std::string newHighScore;
+	std::stringstream ConvertToInt(old_high_score);
+
+	HighScoreFile.open(path, std::ios::out);
+
+	ConvertToInt >> oldHighScore;
+	if (score > oldHighScore)
+	{
+		oldHighScore = score;
+	}
+	newHighScore = std::to_string(oldHighScore);
+
+	HighScoreFile << newHighScore;
+}
+
+int UpdateGameTimeAndScore(int& time,
+	int& speed,
+	int& score)
+{
+	if (time == TIME_MAX)
+	{
+		speed += SPEED_INCREASEMENT;
+	}
+
+	if (time > TIME_MAX)
+	{
+		time = 0;
+	}
+	if (time % 5 == 0)
+	{
+		score += SCORE_INCREASEMENT;
+	}
+	
+	time += TIME_INCREASEMENT;
+
+	return time;
+}
+
+void RenderScrollingBackground(std::vector <double>& offsetSpeed,
+	LTexture(&gBackgroundTexture)[BACKGROUND_LAYER],
+	SDL_Renderer* gRenderer)
 {
 	std::vector <double> layer_speed;
-	layer_speed.push_back(0.0);
-	layer_speed.push_back(0.25);
-	layer_speed.push_back(0.5);
-	layer_speed.push_back(0.75);
-	layer_speed.push_back(1.0);
-	layer_speed.push_back(1.25);
-	layer_speed.push_back(1.5);
-	layer_speed.push_back(1.75);
-	layer_speed.push_back(2.0);
+	layer_speed.push_back(LAYER_1_SPEED);
+	layer_speed.push_back(LAYER_2_SPEED);
+	layer_speed.push_back(LAYER_3_SPEED);
+	layer_speed.push_back(LAYER_4_SPEED);
+	layer_speed.push_back(LAYER_5_SPEED);
+	layer_speed.push_back(LAYER_6_SPEED);
+	layer_speed.push_back(LAYER_7_SPEED);
+	layer_speed.push_back(LAYER_8_SPEED);
+	layer_speed.push_back(LAYER_9_SPEED);
 
 	for (int i = 0; i < BACKGROUND_LAYER; ++i)
 	{
@@ -25,7 +82,10 @@ void RenderScrollingBackground(std::vector <double>& offsetSpeed, LTexture (&gBa
 	}
 }
 
-void RenderScrollingGround(int& speed, const int acceleration, LTexture gGroundTexture, SDL_Renderer *gRenderer)
+void RenderScrollingGround(int& speed,
+	const int acceleration,
+	LTexture gGroundTexture,
+	SDL_Renderer* gRenderer)
 {
 	speed -= GROUND_SPEED + acceleration;
 	if (speed < -gGroundTexture.GetWidth())
@@ -36,7 +96,11 @@ void RenderScrollingGround(int& speed, const int acceleration, LTexture gGroundT
 	gGroundTexture.Render(speed + gGroundTexture.GetWidth(), 0, gRenderer);
 }
 
-void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Play, Mix_Chunk *gClick)
+void HandlePlayButton(SDL_Event* e,
+	Button& PlayButton,
+	bool& QuitMenu,
+	bool& Play,
+	Mix_Chunk* gClick)
 {
 	if (e->type == SDL_QUIT)
 	{
@@ -53,7 +117,7 @@ void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Pl
 		case SDL_MOUSEBUTTONDOWN:
 			Play = true;
 			QuitMenu = true;
-			Mix_PlayChannel(-1, gClick, 0);
+			Mix_PlayChannel(MIX_CHANNEL, gClick, 0);
 			PlayButton.currentSprite = BUTTON_MOUSE_OVER;
 			break;
 		}
@@ -64,7 +128,15 @@ void HandlePlayButton(SDL_Event* e, Button &PlayButton, bool& QuitMenu, bool& Pl
 	}
 }
 
-void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button& HelpButton, Button& BackButton, LTexture gInstructionTexture, LTexture gBackButtonTexture, SDL_Renderer *gRenderer, bool &Quit_game, Mix_Chunk *gClick)
+void HandleHelpButton(SDL_Event* e,
+	SDL_Rect(&gBackButton)[BUTTON_TOTAL],
+	Button& HelpButton, 
+	Button& BackButton, 
+	LTexture gInstructionTexture,
+	LTexture gBackButtonTexture, 
+	SDL_Renderer *gRenderer, 
+	bool &Quit_game, 
+	Mix_Chunk *gClick)
 {
 	if (HelpButton.IsInside(e, COMMON_BUTTON))
 	{
@@ -75,7 +147,7 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			HelpButton.currentSprite = BUTTON_MOUSE_OVER;
-			Mix_PlayChannel(-1, gClick, 0);
+			Mix_PlayChannel(MIX_CHANNEL, gClick, NOT_REPEATITIVE);
 
 			bool ReadDone = false;
 			while (!ReadDone)
@@ -98,7 +170,7 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 							break;
 						case SDL_MOUSEBUTTONDOWN:
 							BackButton.currentSprite = BUTTON_MOUSE_OVER;
-							Mix_PlayChannel(-1, gClick, 0);
+							Mix_PlayChannel(MIX_CHANNEL, gClick, NOT_REPEATITIVE);
 							ReadDone = true;
 							break;
 						}
@@ -125,7 +197,10 @@ void HandleHelpButton(SDL_Event* e, SDL_Rect(&gBackButton)[BUTTON_TOTAL], Button
 	}
 }
 
-void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit, Mix_Chunk* gClick)
+void HandleExitButton(SDL_Event* e,
+	Button& ExitButton,
+	bool& Quit,
+	Mix_Chunk* gClick)
 {
 	if (ExitButton.IsInside(e, COMMON_BUTTON))
 	{
@@ -137,7 +212,7 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit, Mix_Chunk* g
 		case SDL_MOUSEBUTTONDOWN:
 			Quit = true;
 			ExitButton.currentSprite = BUTTON_MOUSE_OVER;
-			Mix_PlayChannel(-1, gClick, 0);
+			Mix_PlayChannel(MIX_CHANNEL, gClick, NOT_REPEATITIVE);
 			break;
 		}
 	}
@@ -147,7 +222,13 @@ void HandleExitButton(SDL_Event* e, Button& ExitButton, bool& Quit, Mix_Chunk* g
 	}
 }
 
-void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture, SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect(&gContinueButton)[BUTTON_TOTAL], bool& Game_State, Mix_Chunk* gClick)
+void HandleContinueButton(Button ContinueButton,
+	LTexture gContinueButtonTexture,
+	SDL_Event* e,
+	SDL_Renderer* gRenderer,
+	SDL_Rect(&gContinueButton)[BUTTON_TOTAL],
+	bool& Game_State,
+	Mix_Chunk* gClick)
 {
 	bool Back_To_Game = false;
 	while (!Back_To_Game)
@@ -164,7 +245,7 @@ void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture
 				case SDL_MOUSEBUTTONDOWN:
 				{
 					ContinueButton.currentSprite = BUTTON_MOUSE_OVER;
-					Mix_PlayChannel(-1, gClick, 0);
+					Mix_PlayChannel(MIX_CHANNEL, gClick, NOT_REPEATITIVE);
 					Mix_ResumeMusic();
 					Game_State = true;
 					Back_To_Game = true;
@@ -185,7 +266,14 @@ void HandleContinueButton(Button ContinueButton, LTexture gContinueButtonTexture
 	}
 }
 
-void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContinueButton)[BUTTON_TOTAL], Button& PauseButton, Button ContinueButton, LTexture gContinueButtonTexture, bool &Game_State, Mix_Chunk *gClick)
+void HandlePauseButton(SDL_Event* e,
+	SDL_Renderer* gRenderer, 
+	SDL_Rect (&gContinueButton)[BUTTON_TOTAL], 
+	Button& PauseButton, 
+	Button ContinueButton, 
+	LTexture gContinueButtonTexture, 
+	bool &Game_State, 
+	Mix_Chunk *gClick)
 {
 	if (PauseButton.IsInside(e, SMALL_BUTTON))
 	{
@@ -196,7 +284,7 @@ void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContin
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			PauseButton.currentSprite = BUTTON_MOUSE_OVER;
-			Mix_PlayChannel(-1, gClick, 0);
+			Mix_PlayChannel(MIX_CHANNEL, gClick, NOT_REPEATITIVE);
 			Mix_PauseMusic();
 			break;
 		case SDL_MOUSEBUTTONUP:
@@ -211,7 +299,11 @@ void HandlePauseButton(SDL_Event* e, SDL_Renderer* gRenderer, SDL_Rect (&gContin
 	}
 }
 
-void GenerateEnemy(Enemy& enemy1, Enemy& enemy2, Enemy& enemy3, SDL_Rect(&gEnemyClips)[FLYING_FRAMES], SDL_Renderer * gRenderer)
+void GenerateEnemy(Enemy& enemy1,
+	Enemy& enemy2,
+	Enemy& enemy3,
+	SDL_Rect(&gEnemyClips)[FLYING_FRAMES], 
+	SDL_Renderer * gRenderer)
 {
 	enemy1.LoadFromFile("imgs/enemy/cactus.png", gRenderer);
 	enemy2.LoadFromFile("imgs/enemy/cactus.png", gRenderer);
@@ -244,25 +336,10 @@ void GenerateEnemy(Enemy& enemy1, Enemy& enemy2, Enemy& enemy3, SDL_Rect(&gEnemy
 	}
 }
 
-int UpdateGameTimeAndScore(int& time, int& speed, int& score)
-{	
-	if (time == TIME_MAX)
-	{
-		speed += 2;
-	}
-
-	if (time > TIME_MAX )
-	{
-		time = 0;
-	}
-	if (time % 5 == 0)
-	{
-		score += 1;
-	}
-	return ++time;
-}
-
-bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_Rect* enemy_clip)
+bool CheckColission(Character character,
+	SDL_Rect* char_clip,
+	Enemy enemy, 
+	SDL_Rect* enemy_clip)
 {
 	bool collide = false;
 	
@@ -316,7 +393,13 @@ bool CheckColission(Character character, SDL_Rect* char_clip, Enemy enemy, SDL_R
 	return collide;
 }
 
-bool CheckEnemyColission(Character character, SDL_Rect* char_clip, Enemy enemy1, Enemy enemy2, Enemy enemy3, SDL_Rect* enemy_clip)
+bool CheckEnemyColission(Character character,
+	Enemy enemy1,
+	Enemy enemy2, 
+	Enemy enemy3,
+	SDL_Rect* char_clip,
+	SDL_Rect* enemy_clip
+	)
 {
 	if (CheckColission(character, char_clip, enemy1))
 	{
@@ -335,7 +418,7 @@ bool CheckEnemyColission(Character character, SDL_Rect* char_clip, Enemy enemy1,
 
 void ControlCharFrame(int &frame)
 {
-	frame += 1;
+	frame += FRAME_INCREASEMENT;
 	if (frame / SLOW_FRAME_CHAR >= RUNNING_FRAMES)
 	{
 		frame = 0;
@@ -344,23 +427,45 @@ void ControlCharFrame(int &frame)
 
 void ControlEnemyFrame(int &frame)
 {
-	frame += 1;
+	frame += FRAME_INCREASEMENT;
 	if (frame / SLOW_FRAME_ENEMY >= FLYING_FRAMES)
 	{
 		frame = 0;
 	}
 }
 
-void DrawPlayerScore(LTexture gTextTexture, LTexture gScoreTexture, SDL_Color textColor, SDL_Renderer *gRenderer, TTF_Font *gFont, const int& score)
+void DrawPlayerScore(LTexture gTextTexture,
+	LTexture gScoreTexture,
+	SDL_Color textColor,
+	SDL_Renderer *gRenderer,
+	TTF_Font *gFont, 
+	const int& score)
 {
-	gTextTexture.Render(670, 20, gRenderer);
+	gTextTexture.Render(TEXT_1_POSX, TEXT_1_POSY, gRenderer);
 	if (gScoreTexture.LoadFromRenderedText(std::to_string(score), gFont, textColor, gRenderer))
 	{
-		gScoreTexture.Render(830, 20, gRenderer);
+		gScoreTexture.Render(SCORE_POSX, SCORE_POSY, gRenderer);
 	}
 }
 
-void DrawEndGameSelection(LTexture gLoseTexture, SDL_Event *e, SDL_Renderer *gRenderer, bool &Play_Again)
+void DrawPlayerHighScore(LTexture gTextTexture,
+	LTexture gHighScoreTexture, 
+	SDL_Color textColor, 
+	SDL_Renderer* gRenderer, 
+	TTF_Font* gFont, 
+	const std::string& HighScore)
+{
+	gTextTexture.Render(TEXT_2_POSX, TEXT_2_POSY, gRenderer);
+	if (gHighScoreTexture.LoadFromRenderedText(HighScore, gFont, textColor, gRenderer))
+	{
+		gHighScoreTexture.Render(HIGH_SCORE_POSX, HIGH_SCORE_POSY, gRenderer);
+	}
+}
+
+void DrawEndGameSelection(LTexture gLoseTexture,
+	SDL_Event *e, 
+	SDL_Renderer *gRenderer,
+	bool &Play_Again)
 {
 	if (Play_Again)
 	{

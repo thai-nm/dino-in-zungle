@@ -6,17 +6,6 @@ Character::Character()
 	posY = GROUND;
 
 	status = 0;
-
-	JUMP_SPEED = 8;
-	FALL_SPEED = 8;
-}
-
-Character::~Character()
-{
-	posX = 0;
-	posY = 0;
-
-	status = 0;
 }
 
 bool Character::OnGround()
@@ -34,7 +23,7 @@ void Character::HandleEvent(SDL_Event& e, Mix_Chunk *gJump)
 			{
 				if (OnGround())
 				{
-					Mix_PlayChannel(-1, gJump, 0);
+					Mix_PlayChannel(MIX_CHANNEL, gJump, NOT_REPEATITIVE);
 					status = JUMP;
 				}
 			}

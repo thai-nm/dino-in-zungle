@@ -1,6 +1,7 @@
 - Khi bị va chạm với vật cản, đổi ảnh của nhân vật.
-- Hiện nút Play Again.
-- Hiện nút Pause và làm mờ màn hình đằng sau khi ấn Pause.
-- Hiện điểm.
-- Chỉnh phần sinh ngẫu nhiên.
-- Chỉnh va chạm.
+- Hiện Play Again <done>
+- Hiện nút Pause và Continue to Play <done>
+- Hiện điểm <done>
+- Hiện High Score (kể cả khi đã đóng rồi mở lại game) <done>
+- Chỉnh phần sinh ngẫu nhiên <done>
+- Chỉnh va chạm <done>
