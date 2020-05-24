@@ -295,7 +295,7 @@ bool LoadMedia()
 {
 	bool success = true;
 
-	gMusic = Mix_LoadMUS("sound/bkgr_audio1.wav");
+	gMusic = Mix_LoadMUS("sound/bkgr_audio.wav");
 	if (gMusic == nullptr)
 	{
 		LogError("Failed to load background music", MIX_ERROR);
@@ -309,7 +309,7 @@ bool LoadMedia()
 		success = false;
 	}
 
-	gClick = Mix_LoadWAV("sound/mouse_click1.wav");
+	gClick = Mix_LoadWAV("sound/mouse_click.wav");
 	if (gClick == nullptr)
 	{
 		LogError("Failed to load mouse click sound", MIX_ERROR);
